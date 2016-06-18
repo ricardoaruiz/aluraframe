@@ -5,7 +5,7 @@ class Negociacao {
     constructor(data, quantidade, valor) {        
         
         //Cria-se uma nova data a partir da informada para garantir que não seja alterada por sua referência.
-        this._data = new Date(data);
+        this._data = new Date(data.getTime());        
         
         this._quantidade = quantidade;
         this._valor = valor;
