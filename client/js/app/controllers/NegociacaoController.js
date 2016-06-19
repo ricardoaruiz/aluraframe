@@ -11,58 +11,34 @@ class NegociacaoController {
         this._inputData = $('#data');
         this._inputQuantidade = $('#quantidade');
         this._inputValor = $('#valor');
+        this._listaNegociacoes = new ListaNegociacoes();
     }
 
+    // Adiciona uma negociação a lista de negociações
     adiciona(event) {
         //Cancela o comportamento padrão de submissão do form
         event.preventDefault();
-
-        let data = this.getDataNegociacao(this._inputData.value);
-
-        let negociacao = this.novaNegociacao(data, this._inputQuantidade.value, this._inputValor.value);        
-
-        this.limparFormulario();
-
-        console.log(negociacao);
-        // adicionar a negociação em uma lista
+        
+        this._listaNegociacoes.adiciona(this._criaNegociacao());
+        this._limparFormulario();        
+        console.log(this._listaNegociacoes.negociacoes);
 
     }
 
     // Cria uma negociação a partir dos dados da tela
-    novaNegociacao(data, quantidade, valor) {
+    _criaNegociacao() {
         return new Negociacao(
-            data,
-            quantidade,
-            valor
+            DateHelper.textoParaData(this._inputData.value)
+            , this._inputQuantidade.value
+            , this._inputValor.value
         );
-    }
+    }   
 
-    //Recebe uma data no formato YYYY-MM-DD
-    getDataNegociacao(strData) {
-
-        // ... significa "spread operator" que faz é pegar cada item do array e passar
-        // como parâmetro para a classe date ou para um método ou etc.
-
-        //map função do array que percorre os itens do mesmo e faz uma transformação retornando 
-        // um novo array
-
-        //=> é uma "arrow function"
-        // Caso a arrow function possua somente uma linha não é necessário usar os {} para delimilitá-la.
-        // e nem o return para retornar o valor
-        //Esse código usando função normal seria:
-            // map(function(item, indice) { return indice == 1 ? item-1 : item; })
-
-        return new Date(...
-            strData
-            .split('-')
-            .map((item, indice) => indice == 1 ? item-1 : item)
-        );
-    }
-
-    limparFormulario(){
+    // Limpa o formulário
+    _limparFormulario(){
         this._inputData.value = "";
-        this._inputQuantidade.value = ""; 
-        this._inputValor.value = "";
+        this._inputQuantidade.value = 1; 
+        this._inputValor.value = 0.0;
         this._inputData.focus();
     }
     
