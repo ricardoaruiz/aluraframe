@@ -1,0 +1,2232 @@
+2 - Especificando uma Negociação
+
+Pense no analista de mercado, um profissional que elabora modelos de mercados para que possa prever seu comportamento. Um modelo nada mais é do que uma abstração de algo que existe no mundo real, inclusive essa abstração pode ser materializada em nosso código, aliás um paradigma que nos ajuda nesse processo é o paradigma orientado a objetos.
+
+O paradigma orientado a objetos
+Neste treinamento eu pressuponho que você já tenha uma noção do que é o paradigma orientado a objetos. Veja, não disse "programação" orientada a objetos, mas "paradigma". Contudo, no primeiro exercício deste capítulo há um reforço para aqueles que ainda têm dúvida ou aqueles que não conseguem enxergar suas vantagens. Se você está seguro neste paradigma, pode continuar comigo. Se não está tão seguro assim, faça o primeiro exercício deste capítulo. Ele nada mais é do que uma transcrição entre dois amigos, onde um explica o paradigma da orientação a objetos para o outro.
+
+OO e Classes
+No paradigma orientado a objetos, abstrações do mundo real (nosso modelo) são criadas através de classes. Pense em uma classe como um molde ou uma espécie de forma na qual criamos objetos. Se todos saem da mesma forma, todos possuem a mesma estrutura. É igual aquele biscoito de chocolate ou de morango preferido, todos possuem a mesma estrutura (redondo, texturizado), mas cada um possui características diferentes (cor, sabor). Chegou a hora de criarmos nossa primeira classe, aquela que define uma Negociação!
+
+A classe Negociação
+Já era possível aplicarmos o paradigma orientado a objetos em JavaScript mesmo antes da sua versão ES2015+ (ES6), contudo novas sintaxes da última versão da linguagem tornaram sua implementação menos verbosa.
+
+Nosso primeiro passo será criar o arquivo aluraframe/client/js/app/models/Negociacao.js. Não estranhe o nome do arquivo começando em caixa alta. Apesar de fugir um pouco da convenção, ele deixa claro para nós que aquele script define uma classe.
+
+Vamos declarar nossa classe Negociacao:
+
+// aluraframe/client/js/app/models/Negociacao.js
+
+class Negociacao {
+
+}
+Usamos a palavra reservada class seguida do nome da classe. Contudo, ela nada especifica. Vamos definir que todo objeto criado a partir dessa classe terá as propriedades data, quantidade e valor:
+
+// aluraframe/client/js/app/models/Negociacao.js
+
+class Negociacao {
+
+    constructor() {
+
+        this.data = new Date();
+        this.quantidade = 1;
+        this.valor = 0.0;
+    }
+}
+Em ES2015+, é através do construtor da classe que definimos as três propriedades que listamos antes. A palavra this, já conhecida por programadores JavaScript, no construtor da classe, é uma referência para uma instância de classe. O que isso significa? Significa que se criarmos 10 objetos a partir dessa classe, cada objeto terá o seu this. Não podia ser diferente, porque objetos de uma mesma classe podem ter propriedades diferentes. Mas como eu crio uma nova instância de um objeto a partir dessa classe?
+
+Primeiramente, vamos substituir a importação do script index.js pelo o script Negociacao.js, que define nossa classe. Não queremos o código funcionando em nossa aplicação. Sendo assim, nosso index.html ficará assim:
+
+<!-- aluraframe/client/index.html -->
+
+    <!-- código anterior omitido -->
+    <script src="js/app/models/Negociacao.js"></script>
+</body>
+</html>
+Agora, vamos adicionar uma nova tag <script>, que usaremos para testarmos nossa classe Negociacao. No final do capítulo, vamos comentá-la, porque ela só existirá para efeito de teste.
+
+<!-- aluraframe/client/index.html -->
+
+    <!-- código anterior omitido -->
+    <script src="js/app/models/Negociacao.js"></script>
+    <script>
+        var n1 = new Negociacao();
+        n1.data = new Date();
+        n1.quantidade = 1;
+        n1.valor = 100.00;
+        console.log(n1);
+
+        var n2 = new Negociacao();
+        n2.data = new Date();
+        n2.quantidade = 2;
+        n2.valor = 200.00;
+        console.log(n2);
+    </script>
+</body>
+</html>
+Veja que usamos o operador new antes do nome da nossa classe. Ele é muito importante, porque é o responsável em criar um novo this para cada instância da classe. É muito comum ouvirmos o termo instância de uma classe que também pode ser entendido como objeto de uma classe. Veja que também criamos uma nova data, no caso, a data atual, também usando o operador new.
+
+Por fim, temos a seguinte saída no console:
+
+Negociacao {data: Wed Apr 20 2016 13:04:22 GMT-0300 (BRT), quantidade: 1, valor: 100}
+Negociacao {data: Wed Apr 20 2016 13:04:22 GMT-0300 (BRT), quantidade: 2, valor: 200}
+Construtor da classe e parâmetros
+Podemos tornar o processo de criação de uma instância de nossa classe passando todos os valores que ela precisa através de seu construtor. Sendo assim, precisamos alterar o constructor da classe Negociacao:
+
+// aluraframe/client/js/app/models/Negociacao.js
+
+class Negociacao {
+
+    constructor(data, quantidade, valor) {
+
+        this.data = data;
+        this.quantidade = quantidade;
+        this.valor = valor;
+    }
+}
+Veja que construtor se comporta como se fosse uma função que recebe três parâmetros. Cada um dos parâmetros atribuímos às propriedades da classe. Sendo assim, podemos alterar nosso teste para:
+
+<!-- aluraframe/client/index.html -->
+
+    <!-- código anterior omitido -->
+
+    <script src="js/app/models/Negociacao.js"></script>
+    <script>
+        var n1 = new Negociacao(new Date(), 1, 100.00);
+        console.log(n1);
+
+        var n2 = new Negociacao(new Date(), 2, 200.00);
+        console.log(n2);
+    </script>   
+</body>
+</html>
+Cuidado com o modelo anêmico
+E se quisermos saber o volume da nossa negociação? Basta multiplicarmos a quantidade pelo seu valor, assim:
+
+<!-- aluraframe/client/index.html -->
+
+    <!-- código anterior omitido -->
+
+    <script src="js/app/models/Negociacao.js"></script>
+    <script>
+        var n1 = new Negociacao(new Date(), 1, 100.00);
+        console.log(n1.quantidade * n1.valor)
+
+        var n2 = new Negociacao(new Date(), 2, 200.00);
+        console.log(n2.quantidade * n2.valor);
+    </script>   
+</body>
+</html>
+Conseguimos calcular o volume das duas negociações, contudo adotamos uma operação procedural. Veja que temos de um lado os dados das negociações e do outro alguém que opera sobre esse dado, no caso, nós programadores. Nós tivemos que realizar o cálculo do volume. Apesar de ser uma operação simples, nada impede que o programador acidentalmente use uma soma ao invés da multiplicação, o que estaria totalmente errado. Sem falar que o programador pode conhecer pouco sobre o domínio do problema e não saber calcular o volume.
+
+Nesse contexto, temos um modelo anêmico ou anemic domain model, uma classe que só possui dados e nenhum comportamento. Se não possui comportamento, outras classes precisarão definir os comportamentos que operam sob uma Negociacao. Imagine cada desenvolver, por exemplo, criando sua função obtemVolume?
+
+Métodos
+Podemos resolver esse problema adicionando um método em nossa classe. Entenda um método como uma função, mas diferente de uma função que pode existir por si só, um método pertence a um objeto:
+
+// aluraframe/client/js/app/models/Negociacao.js
+
+class Negociacao {
+
+    constructor(data, quantidade, valor) {
+
+        this.data = data;
+        this.quantidade = quantidade;
+        this.valor = valor;
+    }
+
+    obtemVoume() {
+        return this.quantidade * this.valor;
+    }
+}
+Usando nosso método:
+
+<!-- aluraframe/client/index.html -->
+
+    <!-- código anterior omitido -->
+
+    <script src="js/app/models/Negociacao.js"></script>
+    <script>
+        var n1 = new Negociacao(new Date(), 1, 100.00);
+        console.log(n1.obtemVolume())
+        var n2 = new Negociacao(new Date(), 2, 200.00);
+        console.log(n2.obtemVolume());
+    </script>   
+</body>
+</html>
+Veja que a regra do cálculo do volume de uma negociação, por mais ínfima que seja, pertence agora à Negociacao. Para onde as instâncias da classe Negociacao forem, seus comportamentos irão juntos.
+
+Encapsulamento
+Outro ponto importante é que segundo a regra do negócio, quando uma negociação é criada ela não pode ser modificada depois. Imagine se eu realizo uma negociação com você e depois de fechada eu a altero para tirar algum benefício? Um novo teste demonstra que podemos alterar uma instância de Negociacao:
+
+<!-- aluraframe/client/index.html -->
+
+    <!-- código anterior omitido -->
+
+    <script src="js/app/models/Negociacao.js"></script>
+    <script>
+        var n1 = new Negociacao(new Date(), 1, 100.00);
+        console.log(n1.obtemVolume())
+        var n2 = new Negociacao(new Date(), 2, 200.00);
+        n2.quantidade = 5; // alterando a quantidade
+        console.log(n2.obtemVolume());
+    </script>   
+</body>
+</html>
+Em outras linguagens, como Java e C#, podemos definir atributos privados, isto é, que só podem ser acessados pelos métodos da própria classe, garantindo assim o encapsulamento. Mesmo na versão ES2015, JavaScript não possui este tipo de modificador. Existem alguns hacks que permitem chegar a algo parecido, mas que impactam na legibilidade ou na performance do código.
+
+Uma convenção é usar um _ antes de cada atributo, sinalizando para o programador que esses atributos não devem ser acessados diretamente. Alterando nossa classe temos:
+
+// aluraframe/client/js/app/models/Negociacao.js
+
+class Negociacao {
+
+    constructor(data, quantidade, valor) {
+
+        this._data = data;
+        this._quantidade = quantidade;
+        this._valor = valor;
+    }
+
+    obtemVolume() {
+        return this._quantidade * this._valor;
+    }
+}
+É claro, precisamos alterar nosso teste:
+
+<!-- aluraframe/client/index.html -->
+
+    <!-- código anterior omitido -->
+
+    <script src="js/app/models/Negociacao.js"></script>
+    <script>
+        var n1 = new Negociacao(new Date(), 1, 100.00);
+        console.log(n1.obtemVolume())
+        var n2 = new Negociacao(new Date(), 2, 200.00);
+        n2._quantidade = 5; // pois é, você não deveria fazer isso!
+        console.log(n2.obtemVolume());
+    </script>   
+</body>
+</html>
+Veja que essa estratégia é apenas uma convenção e nada impede o acesso direto às propriedades. Excelente, mas se o programador quiser ler o valor? Por exemplo, para imprimir o valor da negociação? Assumindo que não podemos acessar propriedades prefixadas com _, precisamos criar métodos acessadores. Geralmente começamos esses métodos com a palavra get, usa convenção muito usada. Vamos aproveitar e renomear o método obtemVolume para getVolume:
+
+class Negociacao {
+
+    constructor(data, quantidade, valor) {
+
+        this._data = data;
+        this._quantidade = quantidade;
+        this._valor = valor;
+    }
+
+    getVolume() {
+        return this._quantidade * this._valor;
+    }
+
+    getData() {
+        return this._data;
+    }
+
+    getQuantidade() {
+        return this._quantidade;
+    }
+
+    getValor() {
+        return this._valor;
+    }
+}
+E por fim, alterando nosso teste:
+
+<!-- aluraframe/client/index.html -->
+
+    <!-- código anterior omitido -->
+
+    <script src="js/app/models/Negociacao.js"></script>
+    <script>
+        var n1 = new Negociacao(new Date(), 1, 100.00);
+        console.log(n1.getData());
+        console.log(n1.getQuantidade());
+        console.log(n1.getValor());
+        console.log(n1.getVolume());
+    </script>   
+</body>
+</html>
+A sintaxe get
+Excelente, vimos até agora que não há como definirmos propriedades privadas em JavaScript e que usamos a convenção de prefixar as propriedades da classe com _, sinalizando para o desenvolvedor que elas não devem ser acessadas diretamente por ele. Usamos também o convenção de adicionar métodos com o prefixo get, para lermos os valores das propriedades "privadas". No entanto, podemos simplificar ainda mais nossa classe.
+
+Quando queremos declarar uma propriedade somente leitura, podemos usar a sintaxe get no lugar do prefixo na declaração dos métodos da nossa classe, dessa maneira:
+
+class Negociacao {
+
+    constructor(data, quantidade, valor) {
+
+        this._data = data;
+        this._quantidade = quantidade;
+        this._valor = valor;
+    }
+
+    get volume() {
+        return this._quantidade * this._valor;
+    }
+
+    get data() {
+        return this._data;
+    }
+
+    get quantidade() {
+        return this._quantidade;
+    }
+
+    get valor() {
+        return this._valor;
+    }
+}
+Veja que em cada método temos a sintaxe get. Por mais que todos eles sejam métodos, podemos acessar cada um deles como se fossem propriedades do objeto!
+
+    <script src="js/app/models/Negociacao.js"></script>
+    <script>
+        var hoje = new Date();
+        var n1 = new Negociacao(hoje, 1, 100.00);
+        console.log(n1.data); // imprime o valor de this._data
+        console.log(n1.quantidade); // imprime o valor de this._quantidade
+        console.log(n1.valor); // imprime o valor de this._valor
+    </script>   
+</body>
+</html>
+Veja que acessamos os métodos como propriedades da classe! E se tentarmos atribuir um valor a eles?
+
+    <script src="js/app/models/Negociacao.js"></script>
+    <script>
+        var hoje = new Date();
+        var n1 = new Negociacao(hoje, 1, 100.00);
+        n1.quantidade = 10;
+        consooe.log(n1.quantidade); // continua com quantidade 1
+    </script>   
+</body>
+</html>
+Isso faz todo sentido, já que são métodos acessadores e por isso não devem alterar a propriedade a qual dão acesso. Contudo, ainda é possível fazer o famigerado n1._quantidade = 10, mas isso não faremos porque a propriedade está prefixada com _.
+
+Objetos imutáveis
+Recapitulando: uma negociação criada não pode ser modificada, por isso prefixamos com _ cada propriedade, uma convenção que sinaliza para os desenvolvedores que eles não podem ler diretamente aqueles atributos, mas apenas através dos métodos da classe. Também criamos métodos acessadores, estes sim, devem ser usados pelos desenvolvedores para acessarmos as propriedades do objeto. Contudo, podemos lançar mão de um recurso que já existe há algum tempo na linguagem.
+
+Podemos "congelar" um objeto, significando que qualquer alteração em suas propriedades serão ignoradas. No caso da nossa classe Negociacao, isso faz todo sentido, porque nem mesmo os métodos da classe podem alterar as propriedades de uma negociação criada.
+
+Para isso, podemos usar o método Object.freeze. Modificando nossa classe:
+
+<!-- aluraframe/client/index.html -->
+
+    <!-- código anterior omitido -->
+
+    <script src="js/app/models/Negociacao.js"></script>
+    <script>
+        var n1 = new Negociacao(new Date(), 1, 100.00);
+        Object.freeze(n1); // congelou o objeto
+        console.log(Object.isFrozen(n1)); // true se o objeto esta congelado
+        n1._quantidade = 10; // não tem efeito
+        console.log(n1.quantidade()); // continua exibindo 1
+    </script>   
+</body>
+</html>
+No entanto veja que essa solução também é procedural. Primeiro criamos um objeto e depois precisamos lembrar de congelá-lo. Veja que precisamos criar um manual para o desenvolvedor, indicando que toda vez que uma negociação for criada ele deve congelá-la. Para removermos esse fardo do desenvolvedor, podemos congelar o objeto em seu próprio construtor. Alterando a classe aluraframe/js/app/models/Negociacao.js:
+
+// aluraframe/js/app/models/Negociacao.js
+
+class Negociacao {
+
+    constructor(data, quantidade, valor) {
+
+        this._data = data;
+        this._quantidade = quantidade;
+        this._valor = valor;
+
+        Object.freeze(this); // congela a instância do objeto
+    }
+
+    get volume() {
+        return this._quantidade * this._valor;
+    }
+
+    get data() {
+        return this._data;
+    }
+
+    get quantidade() {
+        return this._quantidade;
+    }
+
+    get valor() {
+        return this._valor;
+    }
+}
+E nada mais justo do que alterarmos nosso teste, pois não precisamos mais nos preocupar em aplicar Object.freeze:
+
+<!-- aluraframe/client/index.html -->
+
+    <!-- código anterior omitido -->
+
+    <script src="js/app/models/Negociacao.js"></script>
+    <script>
+        var n1 = new Negociacao(new Date(), 1, 100.00);
+
+        console.log(Object.isFrozen(n1)); // true se o objeto esta congelado
+
+        console.log(n1.quantidade);
+        n1._quantidade = 1000; // acessando um membro privado!
+        console.log(n1.quantidade); // continua exibindo 1! É imutável!
+    </script>   
+</body>
+</html>
+Programação defensiva
+Excelente! Mas será que nossa instância continua imutável mesmo? Vamos tentar alterar a data:
+
+<!-- aluraframe/client/index.html -->
+
+    <!-- código anterior omitido -->
+
+    <script src="js/app/models/Negociacao.js"></script>
+    <script>
+        var n1 = new Negociacao(new Date(), 1, 100.00);
+        console.log(n1.data);
+        n1.data.setDate(n1.data.getDate() + 1);
+        console.log(n1.data);
+    </script>   
+</body>
+Quando imprimimos as duas datas no console temos, por exemplo:
+
+Wed Apr 20 2016 15:10:15 GMT-0300 (BRT)
+Apr 21 2016 15:10:15 GMT-0300 (BRT)
+Veja que conseguimos alterar a data da negociação! Isso acontece, porque Object.freeze é shallow, ou seja, ele fica na superfície. Apesar de não podermos atribuir novamente um novo objeto à referência que já temos como n1._data = new Date(), nós podemos chamar os métodos do objeto data, que operam sobre seu estado interno, que não é congelado. E agora?
+
+Podemos lançar mão da programação defensiva. Quando chamarem a propriedade getter data retornaremos uma nova instância de Date com a mesma data da nossa negociação. Como é outra instância, qualquer modificação não impactará em nossa classe:
+
+class Negociacao {
+
+    constructor(data, quantidade, valor) {
+
+        this._data = data;
+        this._quantidade = quantidade;
+        this._valor = valor;
+        Object.freeze(this);
+    }
+
+    get volume() {
+        return this._quantidade * this._valor;
+    }
+
+    get data() {
+        return new Date(this._data.getTime()); // novidade aqui! retorna uma nova Data
+    }
+
+    get quantidade() {
+        return this._quantidade;
+    }
+
+    get valor() {
+        return this._valor;
+    }
+}
+Veja que passamos para o construtor de Date o resultado de data.getTime(). Esta função retorna um número gigante que representa nossa data e claro, o construtor de Date está preparado para receber esse número e criar uma nova data. Mas será que nossa classe Negociacao é realmente imutável? Mais um teste!
+
+    <script src="js/app/models/Negociacao.js"></script>
+    <script>
+        var hoje = new Date();
+        var n1 = new Negociacao(hoje, 1, 100.00);
+        console.log(n1.data);
+        hoje.setDate(hoje.getDate() + 2);
+        console.log(n1.data); // alterou a data da negociação!
+    </script>   
+</body>
+</html>
+Assim como Java, C# e outras linguagens de programação, objetos são passados por referência em JavaScript. É por que ao alterarmos a instância hoje, a data de n1 também é modificada, porque ambos apontam para o mesmo objeto em memória. Podemos resolver isso também com programação defensiva no construtor, criando uma novo Date baseado na data que recebemos como parâmetro. Alterando nossa classe:
+
+class Negociacao {
+
+    constructor(data, quantidade, valor) {
+
+        this._data = new Date(data.getTime()); // criando uma nova instância a partir do tempo de uma data 
+        this._quantidade = quantidade;
+        this._valor = valor;
+        Object.freeze(this);
+    }
+
+    get volume() {
+        return this._quantidade * this._valor;
+    }
+
+    get data() {
+        return new Date(this._data.getTime());
+    }
+
+    get quantidade() {
+        return this._quantidade;
+    }
+
+    get valor() {
+        return this._valor;
+    }
+}
+Excelente, contudo, antes de continuarmos, que tal adotarmos uma nova maneira de declarar nossas variáveis? Vamos substituir a palavra reservada var por let:
+
+    <script src="js/app/models/Negociacao.js"></script>
+    <script>
+        let hoje = new Date();
+        let n1 = new Negociacao(hoje, 1, 100.00);
+        console.log(n1.data);
+        hoje.setDate(hoje.getDate() + 2);
+        console.log(n1.data); // não altera mais a data!
+    </script>   
+</body>
+</html>
+Quando declaramos uma variável com let ela passar a ter escopo de bloco. Vejamos um exemplo:
+
+    <script src="js/app/models/Negociacao.js"></script>
+    <script>
+        let hoje = new Date();
+        let n1 = new Negociacao(hoje, 1, 100.00);
+        console.log(n1.data);
+        hoje.setDate(hoje.getDate() + 2);
+        console.log(n1.data); 
+
+        for(let i=0; i<3; i++) {
+            console.log(n1.data); // imprimindo a data 3 vezes!
+        }
+        console.log(i) // undefined
+    </script>   
+</body>
+</html>
+Como a variável foi declarada dentro do bloco for, ela não é visível fora do bloco. Contudo, se voltarmos para a declaração com var o escopo da variável passar ser da função. Como nosso código não está dentro de uma função, ela passa a ser global:
+
+    <script src="js/app/models/Negociacao.js"></script>
+    <script>
+        let hoje = new Date();
+        let n1 = new Negociacao(hoje, 1, 100.00);
+        console.log(n1.data);
+        hoje.setDate(hoje.getDate() + 2);
+        console.log(n1.data); 
+
+        for(var i=0; i<3; i++) {
+            console.log(n1.data); // imprimindo a data 3 vezes!
+        }
+        console.log(i) // imprime 3
+    </script>   
+</body>
+</html>
+Se você já programou em outras linguagens, como Java, C, C++ ou C#, a declaração de variáveis com let cria um escopo de bloco como nessas linguagens.
+
+Preferi adiantar já a introdução do let para irmos nos habituando ao longo do curso, do que mostrar um problema mais concreto da nossa aplicação. Como diz o ditado, hábito é difícil de adquirir e também difícil de perder. Vamos dar uma chance ao let.
+
+Que tal agora interagirmos com o usuário através de um controller? Esse será o assunto do próximo capítulo.
+
+=========================
+
+3 - A ligação entre as ações do usuário e o modelo
+
+A classe NegociacaoController
+Vamos criar a classe aluraframe/client/js/app/controllers/NegociacaoController.js, que por enquanto terá apenas um método, o adiciona. Neste momento, ele deve apenas ser capaz de ler os dados do formulário e criar uma instância de Negociacao, ainda não teremos a adição da negociação em uma lista.
+
+// aluraframe/client/js/app/controllers/NegociacaoController.js
+
+class NegociacaoController {
+
+    adiciona(event) {
+        event.preventDefault();
+        alert('Executou método adiciona');
+    }
+}
+É claro que não podemos nos esquecer de importarmos o script da nossa classe em aluraframe/client/index.html:
+
+<!-- aluraframe/client/index.html -->
+
+    <!-- código anterior omitido -->
+    <script src="js/app/models/Negociacao.js"></script>
+    <script src="js/app/controllers/NegociacaoController.js"></script> 
+</body>
+</html>
+Agora que temos nosso controller, podemos deixar de usar aquele código de teste que vínhamos escrevendo e em seu lugar criar uma instância da classe NegociacaoController.
+
+<!-- aluraframe/client/index.html -->
+
+    <!-- código anterior omitido -->
+    <script src="js/app/models/Negociacao.js"></script>
+    <script src="js/app/controllers/NegociacaoController.js"></script> 
+    <script>
+        let negociacaoController = new NegociacaoController();
+    </script>  
+</body>
+</html>
+Associando métodos do controller às ações do usuário
+Agora que temos uma instância da classe NegociacaoController, como faremos para executar o método adiciona? Sabemos que ele deve ser chamado quando o formulário for submetido, ou seja, no evento onsubmit. Como a instância do nosso controller está no escopo global, isto é, é acessível em qualquer lugar da nossa página (ou view, se você quiser adotar ainda mais o jargão do modelo MVC), podemos chamar o método do controller diretamente no elemento da página:
+
+<!-- aluraframe/client/index.html -->
+<!-- código anterior omitido -->
+
+<form class="form" onsubmit="negociacaoController.adiciona(event)">
+
+<!-- código posterior omitido -->
+Recarregando a página, um teste demonstra que o método é chamado e o alerta é exibido. Agora que temos certeza que nosso método é chamado, precisamos agora buscar as informações da negociação no formulário. Para isso, precisaremos manipular o DOM. Como o controller é a ponte de ligação entre o modelo e a view, não é feio realizar essa tarefa nele. Sendo assim, temos:
+
+// aluraframe/client/js/app/controllers/NegociacaoController.js
+
+class NegociacaoController {
+
+    adiciona(event) {
+
+        event.preventDefault();
+        let inputData = document.querySelector('#data');
+        let inputQuantidade = document.querySelector('#quantidade');
+        let inputValor = document.querySelector('#valor');
+
+        // exibindo o valor de cada campo
+        console.log(inputData.value);
+        console.log(inputQuantidade.value);
+        console.log(inputValor.value);
+    }
+}
+Transformando document.querySelector em $!
+Recarregando a página para que o script seja atualizado e clicando no botão Incluir, vemos as informações dos campos do formulário impressas no console. Se olharmos atentamente o nosso código, o document.querySelector, assim como bibliotecas de manipulação de DOM, como jQuery, aceita como parâmetro um seletor CSS. E se ao invés de escrevermos document.querySelector, pudéssemos escrever $? Em JavaScript, podemos armazenar funções em variáveis e que tal fazermos isso:
+
+// aluraframe/client/js/app/controllers/NegociacaoController.js
+
+class NegociacaoController {
+
+    adiciona(event) {
+
+        event.preventDefault();
+
+        let $ = document.querySelector;
+        let inputData = $('#data');
+        let inputQuantidade = $('#quantidade');
+        let inputValor = $('#valor');
+
+        // exibindo o valor de cada campo
+        console.log(inputData.value);
+        console.log(inputQuantidade.value);
+        console.log(inputValor.value);
+    }
+}
+Infelizmente não funcionará, teremos o erro NegociacaoController.js:9 Uncaught TypeError: Illegal invocation. Quando chamamos document.querySelector, estamos chamando nada mais, nada menos que um método de document. O this de querySelector é o próprio document, no entanto, quando armazenamos o método em uma variável, o this deixou de ser document e por isso nosso código não funciona. O this é dinâmico em JavaScript e varia com o contexto de execução da função.
+
+Mas nem tudo está perdido, podemos associar novamente o método que armazenamos na variável $ com document, dessa forma:
+
+// aluraframe/client/js/app/controllers/NegociacaoController.js
+
+class NegociacaoController {
+
+    adiciona(event) {
+
+        event.preventDefault();
+
+        let $ = document.querySelector.bind(document); // realiza uma associação (bind) com document
+
+        let inputData = $('#data');
+        let inputQuantidade = $('#quantidade');
+        let inputValor = $('#valor');
+
+        // exibindo o valor de cada campo
+        console.log(inputData.value);
+        console.log(inputQuantidade.value);
+        console.log(inputValor.value);
+    }
+}
+Veja que agora nosso código volta a funcionar e mais enxuto. Podemos preencher o formulário diversas vezes e seus dados serão impressos no console, mas podemos deixar ainda melhor nosso método.
+
+Evitando percorrer o DOM muitas vezes
+Veja que a cada submissão do formulário, buscamos os campos do formulário. Apesar de funcional, a cada submissão "passeamos" pelo DOM, procurando esses elementos. Por lhe dizer que o browser não gosta muito de ficar percorrendo o DOM e dependendo do que está sendo feito, sua aplicação pode sofrer em termos de performance.
+
+Para deixarmos ainda mais otimizada nossa aplicação, vamos buscar os campos do formulário assim que nossa classe NegociacaoController for instanciada e guardaremos cada input como uma propriedade da nossa classe. Toda vez que uma negociação for adicionada, não precisaremos buscar os campos no DOM, mas sim na propriedade da nossa classe:
+
+// aluraframe/client/js/app/controllers/NegociacaoController.js
+
+class NegociacaoController {
+
+    constructor() {
+
+        let $ = document.querySelector.bind(document);
+        this._inputData = $('#data');
+        this._inputQuantidade = $('#quantidade');
+        this._inputValor = $('#valor');
+
+    }
+
+    adiciona(event) {
+
+        event.preventDefault();
+
+        console.log(this._inputData.value);
+        console.log(this._inputQuantidade.value);
+        console.log(this._inputValor.value);
+    }
+}
+Excelente! Podemos incluir zilhões de negociações e nosso código só passeará pelo DOM apenas uma vez. Agora podemos criar uma instância de Negociacao:
+
+// aluraframe/client/js/app/controllers/NegociacaoController.js
+
+class NegociacaoController {
+
+    constructor() {
+
+        let $ = document.querySelector.bind(document);
+        this._inputData = $('#data');
+        this._inputQuantidade = $('#quantidade');
+        this._inputValor = $('#valor');
+
+    }
+
+    adiciona(event) {
+
+        event.preventDefault();
+
+        let negociacao = new Negociacao(
+            this._inputData.value,
+            this._inputQuantidade.value,
+            this._inputValor.value
+        );
+
+        console.log(negociacao);
+    }
+}
+Vamos testar preenchendo o formulário com a data 11/12/2015, quantidade 1 e valor 100. Olhando no console do browser, vemos a mensagem de erro disparada pela classe Negociacao, usada por NegociacaoController:
+
+Negociacao.js:5 Uncaught TypeError: data.getTime is not a function
+O problema com datas
+Isso acontece porque o valor da data passado para o construtor de Negociacao não é do tipo Date, por isso não possui a função getTime(). Se o que capturamos do formulário não é do tipo de Date, que tipo é então?
+
+Podemos verificar o tipo de um objeto através usando typeof:
+
+// aluraframe/client/js/app/controllers/NegociacaoController.js
+
+class NegociacaoController {
+
+    // construtor omitido
+
+    adiciona(event) {
+
+        // imprime string
+        console.log(typeof(this._inputData.value));
+
+        // imprime 2015-12-11
+        console.log(this._inputData.value);
+
+        event.preventDefault();
+        let negociacao = new Negociacao(
+            this._inputData.value,
+            this._inputQuantidade.value,
+            this._inputValor.value
+        );
+
+        console.log(negociacao);
+    }
+}
+O tipo de dado retornado por inputData.value é string, inclusive se imprimirmos seu valor no console, vemos uma string no formato 2015-12-11 (ano-mês-dia). Com o que acabamos de ver, não podemos simplesmente passar o valor do formulário para a nossa instância de Negociacao, precisamos antes criar um objeto do tipo Date a partir dessa string.
+
+Podemos criar um objeto Date de diversas formas, contudo, a que usaremos é aquela na qual seu construtor recebe o ano, mês e dia, respectivamente. Porém, há um detalhe: os meses passados devem ser de 0 a 11. Por exemplo, se quisermos criar uma Date para o dia 10/12/2014 fazemos new Date(2014, 11, 10). Veja então, que em nossa solução precisaremos extrair cada número da string da data, pegar aquele que representa o mês, decrementá-lo, para no final passar cada número como parâmetro no construtor de Date.
+
+Resolvendo um problema com o paradigma funcional
+Pode ter aparecido em sua cabeça diversas maneiras de resolver esse problema, contudo vamos resolvê-la de maneira funcional. O primeiro passo é transformar a data que lemos do campo do formulário em um array, onde cada elemento equivale aos números na sequência em que são apresentados. Para isso, podemos usar a função split, presente em todas as strings. A função recebe como parâmetro o critério de separação, em nosso caso o hífen:
+
+// aluraframe/client/js/app/controllers/NegociacaoController.js
+
+class NegociacaoController {
+
+    // construtor omitido
+
+    adiciona(event) {
+
+        event.preventDefault();
+
+        let parametros = this._inputData.value.split('-'); // retorna um array
+        console.log(parametros);
+
+        let negociacao = new Negociacao(
+            data,
+            this._inputQuantidade.value,
+            this._inputValor.value
+        );
+
+        console.log(negociacao);
+    }
+}
+Se digitarmos 11/10/2015, teremos o array ['11', '10', '2015']. Excelente, contudo precisamos fazer com que o elemento da segunda posição seja decrementado. Para isso, criaremos um novo array, com a diferença de que esse novo array terá o elemento da segunda posição decrementado de um, tudo através da função map, presente em todos os arrays:
+
+// aluraframe/client/js/app/controllers/NegociacaoController.js
+
+class NegociacaoController {
+
+    // construtor omitido
+
+    adiciona(event) {
+
+        event.preventDefault();
+
+        let parametros = this._inputData
+            .value.split('-')
+            .map(function(item) {
+                // executada para cada item do array, no final resultando em um novo array
+                return item;
+            }); 
+
+        console.log(parametros);
+
+        let negociacao = new Negociacao(
+            data,
+            this._inputQuantidade.value,
+            this._inputValor.value
+        );
+
+        console.log(negociacao);
+    }
+}
+Do jeito que está, a função map itera sobre os itens do nosso array criado com split e retorna cada elemento, resultando no final é um array idêntico ao que estamos iterando. Não queremos isso, queremos realizar um decremento para o mês, que é a segunda posição do array, e acessado através do índice 1.
+
+A função map recebe como segundo parâmetro o índice, ou seja, a posição do elemento que está iterando. Sabemos que nosso array terá sempre três posição, que equivalem aos índices 0, 1 e 2. Precisamos retornar o item decrementado apenas para o índice 1. Podemos fazer uma cláusula if e testar se a posição é 1, mas no lugar disso escreveremos um código mais enxuto. Vamos subtrair o item do array pelo resto da divisão por dois do seu índice, ou seja, queremos subtrair o módulo do índice. O módulo da divisão por 2 do índice 1 é 0, do índice 1 é 1 e do índice 2 é 0:
+
+// aluraframe/client/js/app/controllers/NegociacaoController.js
+
+class NegociacaoController {
+
+    // construtor omitido
+
+    adiciona(event) {
+
+        event.preventDefault();
+
+        let parametros = this._inputData
+            .value.split('-')
+            .map(function(item, indice) {
+                return item - indice % 2; 
+            });
+
+        console.log(parametros);
+
+        let negociacao = new Negociacao(
+            data,
+            this._inputQuantidade.value,
+            this._inputValor.value
+        );
+
+        console.log(negociacao);
+    }
+}
+Veja que não precisamos converter cada item da nossa lista em um número para realizar a subtração. Quando temos uma subtração, multiplicação e divisão envolvendo strings, o JavaScript realizará uma conversão implícita de string para Number. Ele só não faz isso com a soma, porque podemos estar somando ou realizando uma concatenação. É claro, se a string que o JavaScript tentar converter não for um número, ocorrerá um erro.
+
+Então, temos um array de números agora, sendo assim, podemos pegar cada posição do Array e passar para o construtor da nossa data:
+
+// aluraframe/client/js/app/controllers/NegociacaoController.js
+
+class NegociacaoController {
+
+    // construtor omitido
+
+    adiciona(event) {
+
+        event.preventDefault();
+
+        let parametros = this._inputData
+            .value.split('-')
+            .map(function(item, indice) {
+                return item - indice % 2; 
+            });
+
+        let data = new Date(parametros[0], parametros[1], parametros[2]);
+
+        let negociacao = new Negociacao(
+            data,
+            this._inputQuantidade.value,
+            this._inputValor.value
+        );
+
+        console.log(negociacao);
+    }
+}
+Spread operator: deixando código menos verboso
+Apesar de funcional, nosso código ainda é verboso quando pensamos na conversão da data. Será que podemos passar o array de parâmetros direto para o construtor da nossa data? Nenhum erro acontece, mas nossa data não é criada corretamente. Para que funcionasse, de alguma forma o JavaScript precisaria entender que não é o array que está sendo passado como parâmetro, mas cada item do array para cada parâmetro do construtor. A boa notícia é que o ES2015 suporta o spread operator. Em português, spread significa "espalhar". Vejamos seu uso:
+
+// aluraframe/client/js/app/controllers/NegociacaoController.js
+
+class NegociacaoController {
+
+    // código do construtor omitido
+
+    adiciona(event) {
+
+        event.preventDefault();
+
+        let parametros = this._inputData
+            .value.split('-')
+            .map(function(item, indice) {
+                return item - indice % 2; 
+            });
+
+        // usando o spread operator
+        let data = new Date(...parametros);
+
+        let negociacao = new Negociacao(
+            data,
+            this._inputQuantidade.value,
+            this._inputValor.value
+        );
+
+        console.log(negociacao);
+    }
+}
+Veja que, ao passarmos parametros para o construtor de Date, usamos três pontos antes. Isso indica o uso do spread operator e com ele o JavaScript extrairá cada elemento do array passando-os como parâmetro para seu construtor. Seu uso não é restrito ao construtor, mas a outros métodos ou funções.
+
+Podemos enxugar ainda mais nosso código, evitando a declaração das variáveis parametros:
+
+// aluraframe/client/js/app/controllers/NegociacaoController.js
+
+class NegociacaoController {
+
+    constructor() {
+
+        let $ = document.querySelector.bind(document);
+        this._inputData = $('#data');
+        this._inputQuantidade = $('#quantidade');
+        this._inputValor = $('#valor');
+
+    }
+
+    adiciona(event) {
+
+        event.preventDefault();
+
+        let data = new Date(...this._inputData
+            .value.split('-')
+            .map(function(item, indice) {
+                return item - indice % 2; 
+            }));
+
+        let negociacao = new Negociacao(
+            data,
+            this._inputQuantidade.value,
+            this._inputValor.value
+        );
+
+        console.log(negociacao);
+    }
+}
+Arrow Functions: deixando o código ainda menos verboso
+Excelente, mas podemos deixar nosso código ainda menos verboso através de arrow functions. A palavra arrow, em português, significa flecha e uma arrow function utiliza => em sua declaração, o que lembra uma flecha:
+
+// aluraframe/client/js/app/controllers/NegociacaoController.js
+
+class NegociacaoController {
+
+    constructor() {
+
+        let $ = document.querySelector.bind(document);
+        this._inputData = $('#data');
+        this._inputQuantidade = $('#quantidade');
+        this._inputValor = $('#valor');
+    }
+
+    adiciona(event) {
+
+        event.preventDefault();
+
+        let data = new Date(...this._inputData
+            .value.split('-')
+            .map((item, indice) => {
+                return item - indice % 2; 
+            }));
+
+        let negociacao = new Negociacao(
+            data,
+            this._inputQuantidade.value,
+            this._inputValor.value
+        );
+
+        console.log(negociacao);
+    }
+}
+Veja que com a arrow function, não precisamos escrever a palavra function. Mas ela não para por aí, quando ela possui apenas uma linha, não precisamos usar um bloco, inclusive nem precisamos usar a palavra chave return:
+
+// aluraframe/client/js/app/controllers/NegociacaoController.js
+
+class NegociacaoController {
+
+    // construtor omitido
+
+    adiciona(event) {
+
+        event.preventDefault();
+
+        let data = new Date(...this._inputData
+            .value.split('-')
+            .map((item, indice) => item - indice % 2));
+
+        let negociacao = new Negociacao(
+            data,
+            this._inputQuantidade.value,
+            this._inputValor.value
+        );
+
+        console.log(negociacao);
+    }
+}
+Veremos que as arrow function são mais do que uma maneira compacta de definirmos funções, mas por enquanto essa introdução já é o suficiente.
+
+========================
+
+4 - Lidar com data é trabalhoso? Chame um ajudante!
+
+Exibindo o objeto Date no formato dia/mês/ano
+Você deve lembrar que precisamos adicionar cada negociação em uma lista, que deve ser exibida para o usuário. Não queremos exibir nessa lista a data como um objeto, mas a data no formato dia/mês/ano. Nada mais justo do que atacarmos primeiro essa estratégia de impressão de uma data no formato desejado.
+
+Uma solução é concatenarmos o dia, mês e o ano da data. Vamos realizar um teste para a data 11/12/2015:
+
+// aluraframe/client/js/app/controllers/NegociacaoController.js
+
+class NegociacaoController {
+
+    // código omitido
+
+    adiciona(event) {
+
+        event.preventDefault();
+
+        let data = new Date(...this._inputData
+            .value.split('-')
+            .map((item, indice) => item - indice % 2));
+
+        let negociacao = 
+            new Negociacao(
+                data,
+                this._inputQuantidade.value,
+                this._inputValor.value
+            );
+
+        let diaMesAno = 
+            negociacao.data.getDate() 
+            + '/' + negociacao.data.getMonth() 
+            + '/' + negociacao.data.getFullYear();
+
+        console.log(diaMesAno); // imprime 11/11/2015 para a negociação de 11/12/2015
+    }
+}
+Veja que o resultado não é o esperado. Lembre-se que internamente, em um objeto do tipo Date os meses vão de 0 (janeiro) a 11 (dezembro). Precisamos incrementar o mês na hora de exibirmos a data:
+
+// aluraframe/client/js/app/controllers/NegociacaoController.js
+// código anterior omitido
+
+let diaMesAno = 
+    negociacao.data.getDate() 
+    + '/' + (negociacao.data.getMonth() + 1)
+    + '/' + negociacao.data.getFullYear();
+
+console.log(diaMesAno); // imprime 11/12/2015 para a negociação de 11/12/2015
+Veja que somos obrigamos a envolver data.getMonth() + 1 entre parênteses, caso contrário a concatenação resultaria em uma data inválida como 11/111/2015. Lembre-se que tudo que vier entre parênteses é avaliado primeiro, só depois vem a concatenação.
+
+Isolando a responsabilidade de conversão de datas
+Excelente, mas repare que a lógica que lida com a criação de um objeto Date a partir de uma string e sua exibição é responsabilidade do nosso controller. Aliás, podemos isolar essas duas responsabilidades em uma classe que poderá ser reutilizada em toda a nossa aplicação.
+
+Vamos criar a classe DateHelper em aluraframe/client/js/app/helpers/DateHelper.js:
+
+// aluraframe/client/js/app/helpers/DateHelper.js
+
+class DateHelper {
+
+    dataParaTexto(data) {
+
+        return data.getDate() + '/' + (data.getMonth()+1) + '/' + data.getFullYear();        
+    }
+
+    textoParaData(anoMesDia) {
+
+        return new Date(...
+            anoMesDia.split('-')
+                .map((item, indice) => item - indice % 2));                 
+    }
+}
+Precisamos importá-lo em index.html:
+
+<!-- aluraframe/client/index.html -->
+
+    <!-- código anterior omitido -->
+    <script src="js/app/models/Negociacao.js"></script>
+    <script src="js/app/controllers/NegociacaoController.js"></script>
+    <script src="js/app/helpers/DateHelper.js"></script>
+    <script>
+        let negociacaoController = new NegociacaoController();
+    </script>   
+</body>
+</html>
+Alterando o código de NegociacaoControler para fazer uso do nosso helper:
+
+class NegociacaoController {
+
+    // construtor omitido
+
+    adiciona(event) {
+
+        event.preventDefault();
+
+        let dateHelper = new DateHelper();
+        let data = dateHelper.textoParaData(this._inputData.value);
+
+        console.log(data);
+
+        let negociacao = 
+            new Negociacao(
+                data,
+                this._inputQuantidade.value,
+                this._inputValor.value
+            );
+
+        let diaMesAno = dateHelper.dataParaTexto(negociacao.data);
+
+        console.log(diaMesAno); // imprime 11/12/2015 para a negociação de 11/12/2015
+
+    }
+}
+Métodos estáticos
+Excelente! Isolamos a responsabilidade de criação e conversão de data em uma classe, no entanto veja que esta classe não possui qualquer propriedade, nem mesmo definimos um construtor para ela. Estamos usando o operador new e sequer fazemos uso de this em sua declaração. Nesse caso, no lugar de definirmos métodos de instância, ou seja, aqueles que são chamados diretamente em uma instância de um objeto de uma classe, podemos definir métodos de classes. Esses métodos de classe são chamados de estáticos e são acessados diretamente pela classe. Alterando DateHelper:
+
+// aluraframe/client/js/helpers/DateHelper.js
+
+class DateHelper {
+
+    static dataParaTexto(data) {
+        return data.getDate() + '/' + (data.getMonth()+1) + '/' + data.getFullYear();        
+    }
+
+    static textoParaData(anoMesDia) {
+
+        return new Date(...
+            anoMesDia.split('-')
+                .map((item, indice) => item - indice % 2));                 
+    }
+}
+Agora, não precisamos criar uma instância de DateHelper em nosso código para podermos acessar os métodos, podemos chamar os métodos diretamente da classe:
+
+class NegociacaoController {
+
+    // construtor omitido
+
+    adiciona(event) {
+
+        event.preventDefault();
+
+        let data = DateHelper.textoParaData(this._inputData.value);
+
+        console.log(data);
+
+        let negociacao = 
+            new Negociacao(
+                data,
+                this._inputQuantidade.value,
+                this._inputValor.value
+            );
+
+        let diaMesAno = DateHelper.dataParaTexto(negociacao.data);
+
+        console.log(diaMesAno); // imprime 11/11/2015 para a negociação de 11/12/2015
+    }
+}
+Podemos enxugar o nosso código ainda um pouco mais, passando o retorno de DateHelper.textoParaData para o construtor da classe Date:
+
+class NegociacaoController {
+
+    constructor() {
+
+        let $ = document.querySelector.bind(document);
+        this._inputData = $('#data');
+        this._inputQuantidade = $('#quantidade');
+        this._inputValor = $('#valor');
+
+    }
+
+    adiciona(event) {
+
+        event.preventDefault();
+
+        let negociacao = 
+            new Negociacao(
+                DateHelper.textoParaData(this._inputData.value),
+                this._inputQuantidade.value,
+                this._inputValor.value
+            );
+
+        let diaMesAno = DateHelper.dataParaTexto(negociacao.data);
+
+        console.log(diaMesAno); // imprime 11/11/2015 para a negociação de 11/12/2015
+    }
+}
+Template Strings
+Perfeito, mas podemos deixar ainda melhor o método DateHelper.dataParaTexto. Veja que neste método usamos a clássica concatenação de strings, inclusive tivemos que envolve a obtenção do mês e seu acréscimo entre parênteses, caso contrário o resultado não seria o esperado, como vimos antes.
+
+Podemos lançar mão de uma template string no lugar de realizarmos a concatenação clássica. Primeiro, precisamos saber que toda template string não usa aspas duplas ou aspas simples, mas uma crase em sua declaração. Em sua declaração, usamos a expressão especial ${nomeDaVarilavelouMetodoOuPropriedade}. Isso fará com que o valor referenciado pela expressão seja interpolado na string. Vejamos um simples exemplo no console do browser:
+
+O código abaixo é no console no browser, não é em nossa aplicação.
+
+let nome = 'Flávio Almeida';
+let empresa 'Alura';
+let frase = `${nome} é instrutor no ${empresa}`;
+console.log(frase);
+O resultado será "Flávio Almeida é instrutor no Alura".
+
+Usando template strings em nosso método dataParaTexto:
+
+class DateHelper {
+
+    static dataParaTexto(data) {
+        return `${data.getDate()}/${data.getMonth() + 1}/${data.getFullYear()}`        
+    }
+
+    static textoParaData(anoMesDia) {
+
+        return new Date(...
+            anoMesDia.split('-')
+                .map((item, indice) => item - indice % 2));                 
+    }
+}
+Veja que o resultado continua sendo o mesmo, mas não precisamos usar concatenação e nem os parênteses na soma do mês da data. Ao longo do treinamento, veremos que template strings nos abriram diversas possibilidades, mas por enquanto o que aprendemos até agora é o suficiente.
+
+Vamos apagar os console.log, inclusive remover o código que realiza a conversão da data para texto, pois ele será utilizado mais tarde. Por fim, nossa classe NegociacaoController fica assim:
+
+// aluraframe/client/js/controllers/NegociacaoController.js
+
+class NegociacaoController {
+
+    constructor() {
+
+        let $ = document.querySelector.bind(document);
+        this._inputData = $('#data');
+        this._inputQuantidade = $('#quantidade');
+        this._inputValor = $('#valor');
+    }
+
+    adiciona(event) {
+
+        event.preventDefault();
+
+        let negociacao = 
+            new Negociacao(
+                DateHelper.textoParaData(this._inputData.value),
+                this._inputQuantidade.value,
+                this._inputValor.value
+            );
+    }
+}
+Um pouquinho de validação
+Vimos que os métodos do nosso DateHelper são acessados diretamente pela classe, contudo, nada nos impede de criarmos uma instância. Se o desenvolvedor faz isso, não encontrará nessa instância os métodos da classe. Para evitar isso, podemos lançar um erro no construtor de DateHelper avisando para o desenvolvedor que ele não pode instanciá-la:
+
+class DateHelper {
+
+    constructor() {
+        throw new Error('Esta classe não pode ser instanciada');
+    }
+    // código posterior omitido
+Além disso, podemos validar a string passada para o método DateHelper.textoParaData, que deve estar sempre no formato aaaa-mm-dd:
+
+class DateHelper {
+
+    // código anterior omitido
+    static textoParaData(texto) {
+
+        if(!/\d{4}-\d{2}-\d{2}/.test(texto)) 
+            throw new Error('Deve estar no formato aaaa-mm-dd');
+
+        return new Date(...texto.split('-').map((item, indice) => item - indice % 2));
+    }
+}
+Criando nosso ListModel
+Agora, precisamos criar uma lista e adicionar cada negociação que criarmos nesta lista, contudo não podemos usar um array JavaScript diretamente. Por quê? Existe a seguinte regra de negócio da nossa aplicação que é a seguinte: uma lista de negociações só pode receber uma nova negociação e listar todas elas, mas jamais uma negociação dessa lista pode ser removida ou alterada. Faz sentido, não podemos alterar uma negociação no meio do jogo.
+
+Muito bem, para resolvermos isso, vamos criar uma classe que encapsulará um array. Todo acesso a este array deverá ser feito através dos métodos dessa classe, dessa maneira, evitando que negociações da lista possam ser alteradas ou excluídas.
+
+Vamos criar a classe aluraframe/client/js/models/ListaNegociacoes.js:
+
+class ListaNegociacoes {
+
+    construtor() {
+        this._negociacoes = [];
+    }
+
+    adiciona(negociacao) {
+        this._negociacoes.push(negociacao);
+    }
+}
+Veja que a nossa classe possui como propriedade um array que armazenará negociações. Usamos o prefixo _ para indicar que esse atributo não deve ser acessado diretamente pelo desenvolvedor. Sendo assim, a maneira convencionada de adicionarmos novas negociações na lista é através do método adiciona, que delega uma chamada ao método push do array, adicionando a negociação passada como parâmetro.
+
+Contudo, precisamos criar um método que permita obter a lista de negociações. Aprendemos que podemos criar um método que é acessado como se fosse uma propriedade:
+
+// aluraframe/client/js/models/ListaNegociacoes.js
+
+class ListaNegociacoes {
+
+    constructor() {
+        this._negociacoes = [];
+    }
+
+    adiciona(negociacao) {
+
+        this._negociacoes.push(negociacao);
+    }
+
+    get negociacoes() {
+        return this._negociacoes;
+    }
+}
+Não podemos nos esquecer de importar o script em index.html. No lugar de importá-lo como último script, vamos agrupá-lo com a importação de Negociacao.js, sendo assim, tudo o que for model será importado um após o outro. É uma questão de organização apenas:
+
+<!-- aluraframe/client/index.html -->
+<!-- código anterior omitido -->
+
+    <script src="js/app/models/Negociacao.js"></script>
+    <script src="js/app/models/ListaNegociacoes.js"></script>
+    <script src="js/app/controllers/NegociacaoController.js"></script>
+    <script src="js/app/helpers/DateHelper.js"></script>
+    <script>
+        let negociacaoController = new NegociacaoController();
+    </script>   
+</body>
+</html>
+Agora, em NegociacaoController, vamos adicionar uma propriedade em nossa classe que é uma instância de ListaNegociacoes:
+
+// aluraframe/client/js/app/controllers/NegociacaoController.js
+
+class NegociacaoController {
+
+    constructor() {
+
+        let $ = document.querySelector.bind(document);
+        this._inputData = $('#data');
+        this._inputQuantidade = $('#quantidade');
+        this._inputValor = $('#valor');
+
+        this._listaNegociacoes = new ListaNegociacoes(); // nova propriedade
+
+    }
+    // código posterior omitido
+}
+Agora, vamos adicionar a negociação que criamos a partir dos dados do formulário e vamos adicioná-la em nossa lista:
+
+class NegociacaoController {
+
+    constructor() {
+
+        let $ = document.querySelector.bind(document);
+        this._inputData = $('#data');
+        this._inputQuantidade = $('#quantidade');
+        this._inputValor = $('#valor');
+        this._listaNegociacoes = new ListaNegociacoes();
+    }
+
+    adiciona(event) {
+
+        event.preventDefault();
+
+        let negociacao = 
+            new Negociacao(
+                DateHelper.textoParaData(this._inputData.value),
+                this._inputQuantidade.value,
+                this._inputValor.value
+            );
+
+        this._listaNegociacoes.adiciona(negociacao);
+        console.log(this._listaNegociacoes.negociacoes);
+    }
+}
+Veja que podemos incluir várias negociações em nossa lista, mas para melhorar a experiência do usuário, que tal limparmos os campos do formulário assim que incluirmos uma nova negociação, inclusive colocar o foco no primeiro campo do formulário? O método que realiza a limpeza do formulário será privado, ou seja, só pode ser chamado pela própria classe. Adotaremos a mesma convenção que usamos para a propriedade, adicionando o prefixo _:
+
+class NegociacaoController {
+
+    constructor() {
+
+        let $ = document.querySelector.bind(document);
+        this._inputData = $('#data');
+        this._inputQuantidade = $('#quantidade');
+        this._inputValor = $('#valor');
+        this._listaNegociacoes = new ListaNegociacoes();
+    }
+
+    adiciona(event) {
+
+        event.preventDefault();
+
+        let negociacao = 
+            new Negociacao(
+                DateHelper.textoParaData(this._inputData.value),
+                this._inputQuantidade.value,
+                this._inputValor.value
+            );
+
+        this._listaNegociacoes.adiciona(negociacao);
+        console.log(this._listaNegociacoes.negociacoes);
+
+        this._limpaFormulario();
+    }
+
+    _limpaFormulario() {
+        this._inputData.value = '';
+        this._inputData.focus();
+        this._inputQuantidade.value = 1;
+        this._inputValor.value = 0.0
+
+    }
+}
+Perfeito, para ficar ainda melhor, vamos criar um método privado chamado criaNegociacao, que isolará aquela parte do código que cria a negociação:
+
+// aluraframe/client/js/app/controllers/NegociacaoController.js
+
+class NegociacaoController {
+
+    constructor() {
+
+        let $ = document.querySelector.bind(document);
+        this._inputData = $('#data');
+        this._inputQuantidade = $('#quantidade');
+        this._inputValor = $('#valor');
+        this._listaNegociacoes = new ListaNegociacoes();
+    }
+
+    adiciona(event) {
+
+        event.preventDefault();
+
+        let negociacao = this._criaNegociacao();
+        this._listaNegociacoes.adiciona(negociacao);
+
+        console.log(this._listaNegociacoes.negociacoes);
+        this._limpaFormulario();
+    }
+
+    _criaNegociacao() {
+        return new Negociacao(
+                DateHelper.textoParaData(this._inputData.value),
+                this._inputQuantidade.value,
+                this._inputValor.value
+            );   
+    }
+
+    _limpaFormulario() {
+        this._inputData.value = '';
+        this._inputData.focus();
+        this._inputQuantidade.value = 1;
+        this._inputValor.value = 0.0
+    }
+}
+Excelente, mas será que a lista de negociações encapsulada por ListaNegociacoes está blindada? É claro que se acessarmos this._listaNegociacoes._negociacoes temos acesso a lista, mas por convenção não devemos fazer isso. Mas se fizermos:
+
+// código anterior omitido
+adiciona(event) {
+
+    event.preventDefault();
+
+    let negociacao = this._criaNegociacao();
+    this._listaNegociacoes.adiciona(negociacao);
+
+    console.log(this._listaNegociacoes.negociacoes);
+    this._limpaFormulario();
+
+    // será que podemos apagar a lista?
+    this._listaNegociacoes.negociacoes.length = 0; 
+    // a lista está vazia!
+    console.log(this._listaNegociacoes.negociacoes);
+}
+// código posterior omitido
+Veja que conseguimos apagar o item que acabamos de adicionar. Isso acontece porque a propriedade negociacoes retorna _negociacoes por debaixo dos panos. Quem tiver acesso a essa referência pode fazer o que quiser com ela, remover itens, inclusive adicionar novos itens sem ter que passar pelo método adiciona:
+
+adiciona(event) {
+
+    event.preventDefault();
+
+    let negociacao = this._criaNegociacao();
+    this._listaNegociacoes.negociacoes.push(negociacao); 
+
+    console.log(this._listaNegociacoes.negociacoes); // ops! Inclui negociação indevidamente! Só pode ser pelo método `adiciona`!
+    this._limpaFormulario();       
+}
+Para resolver isso, podemos lançar mão da programação defensiva mais uma vez. Vamos fazer com que nossa propriedade negociacoes retorne uma nova lista, ou seja, uma outra referência. Qualquer alteração feita com essa lista não alterará a lista encapsulada por ListaNegociacoes. Alterando nossa classe:
+
+// alurapic/client/js/app/models/ListaNegociacoes.js
+
+class ListaNegociacoes {
+
+    constructor() {
+        this._negociacoes = [];
+    }
+
+    adiciona(negociacao) {
+        this._negociacoes.push(negociacao);
+    }
+
+    get negociacoes() {
+        // cria um novo array com [] e concatena com o conteúdo de this._negociacoes, resultando em um novo array
+        return [].concat(this._negociacoes);
+    }
+}
+Agora sim, o código anterior quando tenta adicionar uma negociação na lista retornada por this._listaNegociacoes.negociacoes, adiciona em um novo array, não no que ListaNegociacoes armazena. Mais uma vez a programação defensiva vem nos salvar.
+
+Agora, alterando nosso código e removendo os console.log, para preparar o terreno para o próximo capítulo:
+
+// aluraframe/client/js/app/controllers/NegociacaoController.js
+
+class NegociacaoController {
+
+    constructor() {
+
+        let $ = document.querySelector.bind(document);
+        this._inputData = $('#data');
+        this._inputQuantidade = $('#quantidade');
+        this._inputValor = $('#valor');
+        this._listaNegociacoes = new ListaNegociacoes();
+    }
+
+    adiciona(event) {
+
+        event.preventDefault();
+        this._listaNegociacoes.adiciona(this._criaNegociacao());
+        this._limpaFormulario();
+    }
+
+    _criaNegociacao() {
+        return new Negociacao(
+                DateHelper.textoParaData(this._inputData.value),
+                this._inputQuantidade.value,
+                this._inputValor.value
+            );   
+    }
+
+    _limpaFormulario() {
+        this._inputData.value = '';
+        this._inputData.focus();
+        this._inputQuantidade.value = 1;
+        this._inputValor.value = 0.0
+    }
+}
+
+========================
+
+5 - Temos o modelo, mas e a view?
+
+Classes que representam nossas Views
+No lugar de manipularmos o DOM diretamente, vamos criar uma classe com a responsabilidade de renderizar a tabela de negociações com base na lista de negociações.
+
+Vamos criar a classe aluraframe/client/js/app/NegociacoesView.js:
+
+// aluraframe/client/js/app/views/NegociacoesView.js
+
+class NegociacoesView {
+
+    constructor(elemento) {
+        this.elemento = elemento;
+    }
+}
+Veja que o construtor da classe recebe como parâmetro o elemento do DOM no qual receberá a tabela criada dinamicamente pela classe.
+
+Antes de continuarmos, vamos importar a classe em aluraframe/client/index.html:
+
+<!-- aluraframe/client/index.html -->
+
+    <!-- código anterior omitido -->
+    <script src="js/app/models/Negociacao.js"></script>
+    <script src="js/app/models/ListaNegociacoes.js"></script>
+    <script src="js/app/controllers/NegociacaoController.js"></script>
+    <script src="js/app/helpers/DateHelper.js"></script>
+    <script src="js/app/views/NegociacoesView.js"></script>
+    <script>
+        let negociacaoController = new NegociacaoController();
+    </script>   
+</body>
+</html>
+Vamos adicionar em index.html uma div com ID negociacoesView. Essa div indicará para nossa view onde ela deverá adicionar a tabela criada dinamicamente.
+
+<!-- aluraframe/client/index.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <link rel="stylesheet" href="css/bootstrap-theme.css">
+
+</head>
+<body class="container">
+
+    <h1 class="text-center">Negociações</h1>
+
+    <form class="form" onsubmit="negociacaoController.adiciona(event)">
+
+        <div class="form-group">
+            <label for="data">Data</label>
+            <input type="date" id="data" class="form-control" required autofocus/>        
+        </div>    
+
+        <div class="form-group">
+            <label for="quantidade">Quantidade</label>
+            <input type="number" min="1" step="1" id="quantidade" class="form-control" value="1" required/>
+        </div>
+
+        <div class="form-group">
+            <label for="valor">Valor</label>
+            <input id="valor" type="number" class="form-control"  min="0.01" step="0.01" value="0.0" required />
+        </div>
+
+        <button class="btn btn-primary" type="submit">Incluir</button>
+    </form>
+
+    <div class="text-center">
+        <button class="btn btn-primary text-center" type="button">
+            Obter negociações
+        </button>
+        <button class="btn btn-primary text-center" type="button">
+            Apagar
+        </button>
+    </div> 
+    <br>
+    <br>
+
+    <!-- novidade aqui! -->
+    <div id="negociacoesView"></div>
+
+    <script src="js/app/models/Negociacao.js"></script>
+    <script src="js/app/models/ListaNegociacoes.js"></script>
+    <script src="js/app/controllers/NegociacaoController.js"></script>
+    <script src="js/app/helpers/DateHelper.js"></script>
+    <script src="js/app/views/NegociacoesView.js"></script>
+    <script>
+        let negociacaoController = new NegociacaoController();
+    </script>   
+</body>
+</html>
+Agora precisamos de uma instância de NegociacoesView em nosso controller. Lembre-se que ela precisa receber em seu construtor o elemento do DOM no qual irá operar:
+
+// aluraframe/client/js/app/controllers/NegociacoesController.js
+
+class NegociacaoController {
+
+    constructor() {
+
+        let $ = document.querySelector.bind(document);
+        this._inputData = $('#data');
+        this._inputQuantidade = $('#quantidade');
+        this._inputValor = $('#valor');
+        this._listaNegociacoes = new ListaNegociacoes();
+        // instância de da nossa View que recebe como parâmetro o elemento do DOM
+        this._negociacoesView = new NegociacoesView($('#negociacoesView'));
+    }
+
+    // código anterior omitido
+}
+Exaurindo o poder de Template Strings
+Chegou a hora de elaborarmos o código que constrói dinamicamente uma tabela com base em uma lista de negociações. O primeiro passo é criarmos o template da tabela. O template é uma estrutura "quase" pronta, que possui lacunas que precisam ser preenchidas. Criaremos esse template primeiro em string, para depois convertê-lo em um elemento do DOM, para no final adicioná-lo como conteúdo do elemento passado como parâmetro para a nossa view.
+
+Vamos usar a já conhecida template string, uma vez que além de podermos realizar interpolações, podemos quebrar a string em linhas, sem necessidade de usar o operador + ou \:
+
+// aluraframe/client/js/app/views/NegociacoesView.js 
+
+class NegociacoesView {
+
+    constructor(elemento) {
+
+        this.elemento = elemento;
+    }
+
+    _template() {
+        return `
+            <table class="table table-hover table-bordered">
+                <thead>
+                    <tr>
+                        <th>DATA</th>
+                        <th>QUANTIDADE</th>
+                        <th>VALOR</th>
+                        <th>VOLUME</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+            `;
+    }
+}
+Veja que o template da nossa view é exatamente a tabela que tínhamos antes em index.html, contudo não há nenhuma informação dentro da tag tbody. Nosso template precisa receber como parâmetro uma lista de negociações:
+
+// aluraframe/client/js/app/views/NegociacoesView.js 
+
+class NegociacoesView {
+
+    constructor(elemento) {
+
+        this.elemento = elemento;
+    }
+
+    _template(model) {
+
+        return `<table class="table table-hover table-bordered">
+                    <thead>
+                        <tr>
+                            <th>DATA</th>
+                            <th>QUANTIDADE</th>
+                            <th>VALOR</th>
+                            <th>VOLUME</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+             </table>
+            `;
+    }
+}
+Bolando um sistema de renderização
+Excelente, mas antes de continuarmos a elaborar nossa view, vamos pelo menos renderizá-la em nossa página para que apareça o cabeçalho da nossa tabela. Para isso, vamos criar um método chamado update. Este método recebe o dado de que a view precisa e atualiza this.elemento com nosso template:
+
+// aluraframe/client/js/app/views/NegociacoesView.js 
+
+class NegociacoesView {
+
+    constructor(elemento) {
+        this.elemento = elemento;
+    }
+
+    _template(model) {
+
+            return `<table class="table table-hover table-bordered">
+                        <thead>
+                            <tr>
+                                <th>DATA</th>
+                                <th>QUANTIDADE</th>
+                                <th>VALOR</th>
+                                <th>VOLUME</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                </table>
+                `;
+    }
+
+    update(model) { 
+        this.elemento.innerHTML = this._template(model);
+    }
+}
+Então, quando instanciamos a classe NegociacoesView, ela recebe em seu construtor o elemento no qual irá incluir a tabela criada por ela toda vez que o método update for chamado. O método recebe um modelo como parâmetro, em nosso caso, uma lista de negociação. Dentro dele, chamamos a nossa templateFunction, que recebe o modelo como parâmetro. No final, ele deve retornar uma string que representa a tabela com linhas, que apresentam as informações de cada negociação. Por fim, usamos this.elemento.innerHTML para que a string seja adicionada como filha do elemento, com a diferença de que o conteúdo de innerHTML é convertido para um elemento do DOM. É claro, para que isso funcione, a string passada como parâmetro precisa ser válida.
+
+Agora, vamos alterar aluraframe/client/js/controllers/NegociacoesController.js e chamar o método update da nossa view para que index.html já exiba nossa tabela, mas claro, ainda sem nenhuma negociação:
+
+// aluraframe/client/js/controllers/NegociacoesController.js
+
+class NegociacaoController {
+
+    constructor() {
+
+        let $ = document.querySelector.bind(document);
+        this._inputData = $('#data');
+        this._inputQuantidade = $('#quantidade');
+        this._inputValor = $('#valor');
+        this._listaNegociacoes = new ListaNegociacoes();
+        this._negociacoesView = new NegociacoesView($('#negociacoesView'));
+
+        // chamando o método `update` da nossa view.
+        this._negociacoesView.update(this._listaNegociacoes);
+
+    }
+    // código anterior omitido
+Excelente, quando carregamos nossa página, vemos o cabeçalho da nossa tabela criada. Se inspecionarmos a div que recebeu a tabela no DOM, vemos que dentro dela há realmente o elemento table.
+
+Construindo um template dinâmico
+Agora precisamos, dentro da tag <tbody> do nosso template, percorrer a lista de negociações e para cada negociação criar uma tr. Veja que estamos querendo mapear para cada objeto Negociacao, uma string que representa uma tr com várias tds. Sendo assim, podemos adicionar a seguinte expressão:
+
+// aluraframe/client/js/app/views/NegociacoesView.js 
+
+class NegociacoesView {
+
+    constructor(elemento) {
+
+        this.elemento = elemento;
+    }
+
+    _template(model) {
+
+           return `<table class="table table-hover table-bordered">
+                    <thead>
+                        <tr>
+                            <th>DATA</th>
+                            <th>QUANTIDADE</th>
+                            <th>VALOR</th>
+                            <th>VOLUME</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    ${
+                        model.negociacoes.map(n => {
+                            return `
+                                <tr>
+                                    <td>${DateHelper.dataParaTexto(n.data)}</td>
+                                    <td>${n.quantidade}</td>
+                                    <td>${n.valor}</td>
+                                    <td>${n.volume}</td>
+                                </tr>
+                                `;
+                         }).join('')
+                    }
+                    </tbody>
+                </table>
+            `;
+    }
+
+    update(model) {        
+        this.elemento.innerHTML = this._template(model); 
+    }
+}
+A chamada de negociacoes.map criará uma lista de strings onde cada elemento é uma tr criada dinamicamente com os valores da data, quantidade e valor. Veja que até usamos nosso helper de data para colocar a data no formato dia/mês/ano. Contudo, o resultado final da expressão ${} deve ser uma string, por isso encadeamos uma chamada à função .join(''). Essa função junta todos os itens do array em uma única string e usamos como separador '', isto é, queremos que todos fiquem juntas, sem qualquer separador.
+
+Para que possamos verificar o resultado, precisamos atualizar nossa view imediatamente após a inclusão de uma negociação em nossa lista:
+
+// aluraframe/client/js/controllers/NegociacoesController.js
+
+// código anterior omitido
+
+    adiciona(event) {
+
+        event.preventDefault();
+        this._listaNegociacoes.adiciona(this._criaNegociacao());
+
+        // atualiza a view a cada inclusão para que reflete o estado atual da nossa lista de negociações
+        this._negociacoesView.update(this._listaNegociacoes);
+        this._limpaFormulario();
+    }
+// código posterior omitido
+Um teste demonstra que a cada inclusão, nossa view é renderizada e neste processo exibe corretamente o estado mais atual da nossa lista de negociações.
+
+Podemos enxugá-la ainda mais removendo o bloco da nossa arrow function, pois só temos uma instrução, que é o retorno da template string. Inclusive, nesse caso nem precisamos adicionar a cláusula return:
+
+class NegociacoesView {
+
+    constructor(elemento) {
+
+        this._elemento = elemento;
+    }
+
+    _template(model) {
+
+        return
+        <table class="table table-hover table-bordered">
+            <thead>
+                <tr>
+                    <th>DATA</th>
+                    <th>QUANTIDADE</th>
+                    <th>VALOR</th>
+                    <th>VOLUME</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                ${model.negociacoes.map(n => `
+
+                    <tr>
+                        <td>${DateHelper.dataParaTexto(n.data)}</td>
+                        <td>${n.quantidade}</td>
+                        <td>${n.valor}</td>
+                        <td>${n.volume}</td>
+                    </tr>
+
+                `).join('')}                
+            </tbody>
+
+            <tfoot>
+
+            </tfoot>
+        </table>
+        `;
+    }
+
+    update(model) {
+
+        this._elemento.innerHTML = this._template(model);
+    }
+}
+Excelente, mas isso ainda não é suficiente.
+
+Totalizando o volume em nosso Template
+Precisamos totalizar a coluna volume. Vamos adicionar um <tfoot> em nosso template e lá adicionar uma nova expressão que realiza a totalização do volume:
+
+// aluraframe/client/js/app/views/NegociacoesView.js 
+class NegociacoesView {
+
+    constructor(elemento) {
+
+        this._elemento = elemento;
+    }
+
+    _template(model) {
+
+        return `
+        <table class="table table-hover table-bordered">
+            <thead>
+                <tr>
+                    <th>DATA</th>
+                    <th>QUANTIDADE</th>
+                    <th>VALOR</th>
+                    <th>VOLUME</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                ${model.negociacoes.map(n => `
+
+                    <tr>
+                        <td>${DateHelper.dataParaTexto(n.data)}</td>
+                        <td>${n.quantidade}</td>
+                        <td>${n.valor}</td>
+                        <td>${n.volume}</td>
+                    </tr>
+
+                `).join('')}                
+            </tbody>
+
+            <tfoot>
+                <td colspan="3"></td>
+                <td>
+                    ${model.negociacoes.reduce((total, n) => total + n.volume, 0.0)}
+                </td>
+            </tfoot>
+
+        </table>
+        `;
+    }
+
+    update(model) {
+
+        this._elemento.innerHTML = this._template(model);
+    }
+}
+Veja que lançamos mão mais uma vez de programação funcional. Usamos a função reduce, que todo array em JavaScript possui, inclusive desde a versão ES5. O retorno da função é um único valor, em nosso caso o total do volume. Usamos arrow function para ficar ainda mais elegante.
+
+A função reduce recebe uma função como parâmetro e um valor. Na função, o primeiro parâmetro é a variável que receberá a soma do volume das nossas negociações. Já o segundo parâmetro nos dá acesso à negociação que estamos iterando no momento. Contudo, nosso código daria um erro, pois o primeiro parâmetro que receberá o total precisa ser inicializado. É por isso que o segundo parâmetro da função reduce é a inicialização desse valor, em nosso caso, começamos de 0.
+
+O mesmo código que fizemos sem usar arrow function ficaria assim:
+
+${
+   model.negociacoes.reduce(function(total, n) {
+      return total + n.volume;
+   }, 0.0)
+}
+Você acha que acabou? Ainda temos muito a coisa a melhorar, mas por enquanto isso é suficiente para praticarmos.
+
+====================
+
+6 - Generalizando a solução da nossa View
+
+Repetir código nunca é bom
+Criando a classe Mensagem. A novidade é que o texto e pode ser alterado, por isso usaremos o set, além do get. Inclusive, vamos usar o recurso do ES2015+ (ES6), que permite definir um parâmetro padrão para construtores, métodos e funções. Em nosso caso, caso uma string não seja passada, adotaremos uma string em branco como padrão.
+
+// aluraframe/client/js/app/models/Mensagem.js
+
+class Mensagem {
+
+    constructor(texto='') {   
+        this._texto = texto;
+    }
+
+    get texto() {
+        return this._texto;
+    }
+
+    set texto(texto) {
+        return this._texto = texto; 
+    }
+}
+Agora, vamos criar a view que representa nossa mensagem:
+
+// aluraframe/client/js/app/views/MensagemView.js
+
+class MensagemView {
+
+    constructor(elemento) {
+        this.elemento = elemento;
+    }
+
+    _template(model) {
+        return `<p class="alert alert-info">${model.texto}</p>`;      
+    }
+
+    update(model) {        
+        this.elemento.innerHTML = this._template(model); 
+    }
+}
+Não podemos nos esquecer de importar os dois scripts em index.html. Por uma questão de organização, vamos importar Mensagem.js imediatamente após ListaNegociacao.js, e MensagemView.js imediatamente após NegociacoesView.js:
+
+<!-- aluraframe/client/index.html -->
+
+    <1-- código anterior omitido -->
+    <script src="js/app/models/Negociacao.js"></script>
+    <script src="js/app/models/ListaNegociacoes.js"></script>
+    <script src="js/app/models/Mensagem.js"></script>
+    <script src="js/app/controllers/NegociacaoController.js"></script>
+    <script src="js/app/helpers/DateHelper.js"></script>
+    <script src="js/app/views/NegociacoesView.js"></script>
+    <script src="js/app/views/MensagemView.js"></script>
+    <script>
+        let negociacaoController = new NegociacaoController();
+    </script>   
+</body>
+</html>
+Vamos adicionar a tag <div id="mensagemView"></div> após o título da página:
+
+<!-- aluraframe/client/index.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <link rel="stylesheet" href="css/bootstrap-theme.css">
+
+</head>
+<body class="container">
+
+    <h1 class="text-center">Negociações</h1>
+
+    <!-- local onde será renderizada nossa view -->
+    <div id="mensagemView"></div>
+Agora, precisamos adicionar duas propriedades em nosso controller, uma para guardar o nosso modelo e outra a nossa view:
+
+// aluraframe/client/js/app/controllers/NegociacaoController.js
+
+class NegociacaoController {
+
+    constructor() {
+
+        let $ = document.querySelector.bind(document);
+        this._inputData = $('#data');
+        this._inputQuantidade = $('#quantidade');
+        this._inputValor = $('#valor');
+        this._listaNegociacoes = new ListaNegociacoes();
+
+        this._negociacoesView = new NegociacoesView($('#negociacoesView'));
+        this._negociacoesView.update(this._listaNegociacoes);
+
+        // novidade aqui
+        this._mensagem = new Mensagem();
+        this._mensagemView = new MensagemView($('#mensagemView')); 
+    }
+
+    // código posterior omitido
+}
+Por fim, precisamos alterar nosso modelo de mensagem e solicitar a atualização da view assim que uma nova negociação for adicionada:
+
+// aluraframe/client/js/app/controllers/NegociacaoController.js
+
+// código anterior omitido
+adiciona(event) {
+
+        event.preventDefault();
+
+        this._listaNegociacoes.adiciona(this._criaNegociacao());
+        this._negociacoesView.update(this._listaNegociacoes);
+
+        // nova mensagem e atualizado a view
+        this._mensagem.texto = 'Negociação adicionada com sucesso';
+        this._mensagemView.update(this._mensagem);
+
+        this._limpaFormulario();
+    }
+
+    // código posterior omitido
+Missão cumprida, mas veja que a classe MensagemView é quase idêntica à NegociacoesViews. A única coisa que muda é a implementação do método _template. Hoje temos apenas essas duas classes que representam nossa view, mas imagine em um sistema maior? Ficar repetindo código com certeza nos trará problemas de manutenção.
+
+Herança e reutilização de código
+Para evitar código duplicado, uma solução é usar um recurso da orientação a objetos, chamado herança. Nela, podemos colocar em uma classe todo código que é comum. Todas as outras classes que herdarem dessa classe ganharam o mesmo código. Sendo assim, basta alterarmos a classe Pai que todas as suas classes filhas serão atualizadas automaticamente.
+
+Primeiro, vamos criar a classe aluraframe/client/js/app/views/View.js:
+
+// aluraframe/client/js/app/views/View.js
+
+class View {
+
+    constructor(elemento) {
+        this._elemento = elemento;
+    }
+
+    update(model) {        
+        this._elemento.innerHTML = this._template(model); 
+    }
+
+    _template(model) {}
+
+}
+Importando nosso novo script, antes do primeiro script da nossa view importado:
+
+<!-- aluraframe/client/js/app/views/View.js -->
+
+    <script src="js/app/models/Negociacao.js"></script>
+    <script src="js/app/models/ListaNegociacoes.js"></script>
+    <script src="js/app/models/Mensagem.js"></script>
+    <script src="js/app/controllers/NegociacaoController.js"></script>
+    <script src="js/app/helpers/DateHelper.js"></script>
+    <script src="js/app/views/View.js"></script>
+    <script src="js/app/views/NegociacoesView.js"></script>
+    <script src="js/app/views/MensagemView.js"></script>
+    <script>
+        let negociacaoController = new NegociacaoController();
+    </script>   
+</body>
+</html>
+Veja que a única coisa que a nossa classe View não define é o método _template e nem poderia. Cada View criada em nosso sistema possui um template particular e cabe a quem herdar da nossa classe sobrescrever este método. Sendo assim, vamos alterar MensagemView e NegociacoesView para herdarem de View, através da palavra reservada extends:
+
+class MensagemView extends View {
+
+    constructor(elemento) {
+        //novidade, chamando o construtor da classe mãe
+        super(elemento);
+    }
+
+    //sem método update
+
+    _template(model) {
+        return model.texto ? `<p class="alert alert-info">${model.texto}</p>` : '<p></p>';
+    }
+}
+Agora a classe NegociacoesView:
+
+class NegociacoesView extends View {
+
+    constructor(elemento) {
+    //novidade, chamando o construtor da classe mãe
+        super(elemento);
+    }
+
+    //sem método update
+
+    _template(model) {
+
+        return `
+        <table class="table table-hover table-bordered">
+            <thead>
+                <tr>
+                    <th>DATA</th>
+                    <th>QUANTIDADE</th>
+                    <th>VALOR</th>
+                    <th>VOLUME</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                ${model.negociacoes.map(n => `
+
+                    <tr>
+                        <td>${DateHelper.dataParaTexto(n.data)}</td>
+                        <td>${n.quantidade}</td>
+                        <td>${n.valor}</td>
+                        <td>${n.volume}</td>
+                    </tr>
+
+                `).join('')}                
+            </tbody>
+
+            <tfoot>
+                <td colspan="3"></td>
+                <td>
+                    ${model.negociacoes.reduce((total, n) => total + n.volume, 0.0)}
+                </td>
+            </tfoot>
+
+        </table>
+        `;
+    }
+}
+Construtor vs super
+Repare que nas duas classes usamos extends View para indicar que ambas herdam de View. Com isso, removemos o método update, que será herdado. Além disso, veja que em cada classe o método _template foi redefinido. Por fim, veja que o construtor das duas classes foi modificado e em ambos há a chamada de super(elemento). Isso é necessário, porque toda vez que herdamos de uma classe, o construtor da classe filha deve chamar o construtor da classe pai através de super, passando todos os parâmetros necessários para a classe pai. Como é a classe pai que define a propriedade elemento, tivemos que passar o elemento recebido pela classe filha para a classe pai.
+
+Agora, toda vez que criarmos uma nova view, iremos herdar da classe View. No entanto, o que acontecerá se esquecermos de sobrescrever na classe filha o método _template? Teremos um erro, claro. Podemos deixar ainda mais claro para o desenvolvedor que ele tem a obrigação de sobrescrever o método _template da seguinte maneira:
+
+// aluraframe/client/js/app/views/View.js
+
+class View {
+
+    constructor(elemento) {      
+        this._elemento = elemento;
+    }
+
+    _template(model) {
+         throw new Error('Você deve sobrescrever este método em seu template');
+    }
+
+    update(model) {        
+        this._elemento.innerHTML = this._template(model); 
+    }
+}
+Agora, se a classe View for herdada e a classe filha não sobrescrever o método _template, receberemos uma mensagem de erro que deixa claro o que o desenvolvedor deve fazer. Veja que lançamos um erro através da instrução throw e usamos uma instância de Error para indicar um erro de sintaxe.
+
+Para concluir, veja que o método _template usa a convenção de um método privado. Sendo assim, pela nossa convenção, nem mesmos classes filhas poderiam realizar a sua sobrescrita. É por isso que alteraremos as classes View, NegociacoesView e MensagemView, removendo o prefixo _ do método _template. Segue o código completo das 3 classes:
+
+A classe View:
+
+// aluraframe/client/js/app/views/View.js
+
+class View {
+
+    constructor(elemento) {
+        this._elemento = elemento;
+    }
+
+    update(model) {        
+        this._elemento.innerHTML = this.template(model); 
+    }
+
+    template(model) {
+        throw new Error('Você deve sobrescrever este método em seu template');
+    }
+
+}
+A classe MensagemView:
+
+// aluraframe/client/js/app/views/MensagemView.js
+
+class MensagemView extends View{
+
+    constructor(elemento) {
+        super(elemento);
+    }
+
+    template(model) {
+        return `<p class="alert alert-info">${model.texto}</p>`;      
+    }
+}
+A classe NegociacoesView:
+
+class NegociacoesView extends View{
+
+    constructor(elemento) {
+        super(elemento);
+    }
+
+    template(model) {      
+        return `
+        <table class="table table-hover table-bordered">
+            <thead>
+                <tr>
+                    <th>DATA</th>
+                    <th>QUANTIDADE</th>
+                    <th>VALOR</th>
+                    <th>VOLUME</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                ${model.negociacoes.map(n => `
+
+                    <tr>
+                        <td>${DateHelper.dataParaTexto(n.data)}</td>
+                        <td>${n.quantidade}</td>
+                        <td>${n.valor}</td>
+                        <td>${n.volume}</td>
+                    </tr>
+
+                `).join('')}                
+            </tbody>
+
+            <tfoot>
+                <td colspan="3"></td>
+                <td>
+                    ${model.negociacoes.reduce((total, n) => total + n.volume, 0.0)}
+                </td>
+            </tfoot>
+
+        </table>
+        `;
+    }
+
+}

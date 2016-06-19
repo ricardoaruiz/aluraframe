@@ -1,11 +1,12 @@
-class NegociacoesView {
+class NegociacoesView extends View {
 
     constructor(elemento) {
-        this._elemento = elemento;
+        super(elemento);
     }
 
+    // Sobrescrito de View
     // Métod privado que retorna a tabela de negociações utilizando Template String
-    _template(model) {
+    template(model) {
         return `
         <table class="table table-hover table-bordered">
             <thead>
@@ -54,11 +55,6 @@ class NegociacoesView {
             rodape += n.volume;
         })
         return rodape;
-    }
-
-    // Método público que atualiza a tabela na view
-    update(model) {
-        this._elemento.innerHTML = this._template(model);
     }
 
 }

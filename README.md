@@ -76,3 +76,38 @@ Curso JavaScript avançado I: ES6, orientação a objetos e padrões de projetos
 - 5 - Temos o modelo, mas e a view?
 
 	- Criamos uma classe "NegociacoesView" que será responsável por realizar a atualização da tabela na nossa view. Para isso utilizaremos o "Template String". Nessa classe será renderizada a tabela na view com suas linhas e seu rodapé.
+
+- 6 - Generalizando a solução da nossa View	
+
+	- Criamos uma classe "Mensagem" no modelo para mostrar mensagens no sistema após cada ação. No construtor utilizamos um valor default caso não seja passado nenhuma mensagem para a construção do objeto.
+		Exemplo:
+
+			constructor(texto = '') {
+        		this._texto = texto;
+    		}
+
+    - Criamos uma classe "MensagemView" que será responsável por atualizar a view com mensagens referentes as ações executadas no sistema.
+
+    - Criamos uma classe "View" que será a classe mãe de todas as view. Nessa classe teremos além do construtor recebendo o elemento da tela que será atualizado, o método "update" que receberá o model com os dados que serão atualizados na view. As classes "MensagemView" e "NegociacoesView" devem estender a classe "View" e invocar o construtor da classe mãe.
+    	Exemplo:
+
+    		class NegociacoesView extends View {
+
+    			    constructor(elemento) {
+        				super(elemento);
+    				}
+
+    - Na classe "View" criamos o método "template" que deverá ser implementado pelas classes filhas, porém como em JS não temos como dizer que um método é abstrato, lançamos uma exceção no método template na classe "View" informando que o método deve ser implementado. Dessa forma caso as classes filhas não o sobrescrevam será lançada essa exceção.
+    	Exemplo:
+
+    		class View {
+
+		    constructor(elemento) {
+		        this._elemento = elemento;
+		    }
+
+		    // Esse método lança exceção para indicar que o método template deve ser implementado 
+		    //pelas classes filhas
+		    template(model) {
+		        throw new Error('O método _template deve ser implementado.');
+		    }
