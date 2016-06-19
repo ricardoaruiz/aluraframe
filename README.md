@@ -42,7 +42,7 @@ Curso JavaScript avançado I: ES6, orientação a objetos e padrões de projetos
         	this._inputData = $('#data');
 
 
-	- Utilizamos o recurso "spread operator" "..." que pega cada item de um array e passa como parâmetro para a classe date ou para um método ou etc. Utilizamos isso para pegar o valor da data que veio da tela e passar para o construtor do "Date".
+	- Utilizamos o recurso "Spread Operator" "..." que pega cada item de um array e passa como parâmetro para a classe date ou para um método ou etc. Utilizamos isso para pegar o valor da data que veio da tela e passar para o construtor do "Date".
 
 	- Utilizamos o a função "map" do array para decrementar em um o valor do mês recebido da tela.
 		Exemplo:
@@ -60,9 +60,9 @@ Curso JavaScript avançado I: ES6, orientação a objetos e padrões de projetos
 
 	- Criamos uma classe "DateHelper" que conterá métodos estáticos (static) para fazer as transformações/criações das datas necessárias. Nessa classe como só teremos métodos estáticos não deve ser possível instanciá-la e faremos isso da seguinte forma:
 
-		constructor() {
-			throw new Error('Não é possível instanciar essa classe.');
-		}
+			constructor() {
+				throw new Error('Não é possível instanciar essa classe.');
+			}
 
 	- Utilizamos o "Template String" no método dataParaTexto para evitar a concatenção de strings.
 		Exemplo:
@@ -73,3 +73,6 @@ Curso JavaScript avançado I: ES6, orientação a objetos e padrões de projetos
 
     - Criamos uma classe "ListaNegociacoes" que é responsável por gerenciar as negociaçoes criadas. Só será possível adicionar novas negociações não podendo remover nem alterar. Criamos essa classe como imutável.
 
+- 5 - Temos o modelo, mas e a view?
+
+	- Criamos uma classe "NegociacoesView" que será responsável por realizar a atualização da tabela na nossa view. Para isso utilizaremos o "Template String". Nessa classe será renderizada a tabela na view com suas linhas e seu rodapé.
