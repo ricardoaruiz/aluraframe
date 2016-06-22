@@ -111,3 +111,18 @@ Curso JavaScript avançado I: ES6, orientação a objetos e padrões de projetos
 		    template(model) {
 		        throw new Error('O método _template deve ser implementado.');
 		    }
+
+- 7 - Como saber quando o modelo mudou?
+
+	- Criamos um método "esvazia" na classe "ListaNegociações" que limpa o array de negociações.
+	- Criamos um método "apaga" na classe "NegociacaoController" que chama o método "esvazia". O método "apaga" é chamado no onclick do botão apagar da view.
+
+	- Adicionamos no construtor de "ListaNegociacao" um novo parâmetro que será uma função que será executada nos métodos "adiciona" e "esvazia" para atualizar a view sempre que o modelo sofrer uma alteração. Essa função a ser passada, deve ser passada utilizando "Arrow Function" pois o seu escopo não vai variar de acordo com o contexto e portanto o this da instrução "this._negociacoesView.update(model)" será a classe "NegociacaoController" e não a classe "ListaNegociacao" onde realmente a função será executada. Se fosse usada o função normal com "function", teria que ser passado o contexto que seria executado como primeiro parâmetro da função para na classe "ListaNegociacao" utilizando Reflection executar a função de meneira correta.
+
+	Resumindo:
+
+		O this de uma função é dinâmico, isto é, seu valor é determinado no momento em que a função é chamada. Como o this é dinâmico, é possível usar artifícios da linguagem, como a API Reflect, para alterá-lo se assim desejarmos.
+
+		O this de uma arrow function é léxico, isto é, seu valor é determinado no local onde a arrow function for definida, ela não cria um novo this. O this de uma arrow function não pode ser alterado, mesmo se usarmos recursos da linguagem, como a API Reflect.
+
+	- 
