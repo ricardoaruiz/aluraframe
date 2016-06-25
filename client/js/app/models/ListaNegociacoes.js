@@ -1,14 +1,11 @@
 class ListaNegociacoes {
 
-    constructor(funcUpdateView) {
+    constructor() {
         this._negociacoes = [];
-        this._funcUpdateView = funcUpdateView;
     }
 
     adiciona(negociacao) {
         this._negociacoes.push(negociacao);
-        this._funcUpdateView(this);
-
     }
 
     get negociacoes(){
@@ -19,7 +16,6 @@ class ListaNegociacoes {
 
     esvazia() {
         this._negociacoes = [];
-        this._funcUpdateView(this);
     }
 
 }
