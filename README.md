@@ -167,3 +167,10 @@ Curso JavaScript avançado I: ES6, orientação a objetos e padrões de projetos
             }
 
         });
+
+- 9 - E se alguém criasse nossos proxies? O Padrão de Projeto Factory
+
+	- Criamos uma classe factory para proxy "ProxyFactory" para esconder a complexidade de criação de um proxy.
+	- Criamos uma classe "Bind" que é responsável por ligar o modelo e a view e realizar atualizações na view quando o modelo for alterado.
+
+	

@@ -2981,4 +2981,317 @@ Nosso código funciona e não precisamos mais poluir nossas classes de modelo co
 
 ====================
 
-9 - 
+9 - E se alguém criasse nossos proxies? O Padrão de Projeto Factory
+
+No capítulo anterior, aprendemos a utilizar proxies e armadilhas para disparar a atualização da view sempre que o modelo ListaNegociacoes fosse alterado. Com essa solução, declaramos em um lugar apenas o que deve acontecer, removendo do desenvolvedor a responsabilidade de atualizar a view em outras situações em que o modelo fosse alterado.
+
+Contudo, apesar de poderosa, nossa solução é um tanto verbosa e difícil para que outro desenvolvedor menos experiente entenda todos os detalhes de criação do proxy. Aliás, só implementamos essa solução para o modelo ListaNegociacoes, precisamos fazer a mesma coisa para o modelo Mensagem.
+
+Isolando a complexidade de criação de proxies com o Padrão de Projeto Factory
+Uma solução é criarmos uma classe especializada na criação de proxies, ou seja, queremos uma classe que saiba "fabricar" objetos desse tipo. Aliás, quando buscamos alguém com essa responsabilidade, estamos aplicando o padrão de projeto Factory (fábrica).
+
+Vamos criar a classe aluraframe/client/js/app/services/ProxyFactory.js. Ela terá um método estático apenas, que recebe o objeto usado pelo proxy, as propriedades que desejamos adicionar armadilhas, e por fim o código da nossa armadilha:
+
+// aluraframe/client/js/app/services/ProxyFactory.js
+
+class ProxyFactory{
+
+    static create(objeto, props, acao) {
+
+        return new Proxy(objeto, {
+
+            get(target, prop, receiver) {
+
+                if(props.includes(prop) && typeof(target[prop]) == typeof(Function)) {
+                    return function() { 
+                        Reflect.apply(target[prop], target, arguments);
+                        return acao(target);
+                    }
+                }
+                return Reflect.get(target, prop, receiver);       
+            }
+        })
+    }
+}
+Vamos criar mais um método estático e privado (claro, usando a convenção com _). Esse método conterá a lógica que verifica se a propriedade interceptada é uma função:
+
+// aluraframe/client/js/app/services/ProxyFactory.js
+
+class ProxyFactory{
+
+    static create(objeto, props, acao) {
+
+        return new Proxy(objeto, {
+
+            get(target, prop, receiver) {
+
+                if(props.includes(prop) && ProxyFactory._ehFuncao(target[prop])) {
+                    return function() { 
+                        Reflect.apply(target[prop], target, arguments);
+                        return acao(target);
+                    }
+                }
+                return Reflect.get(target, prop, receiver);       
+            }
+        })
+    }
+
+    static _ehFuncao(func) {
+        return typeof(func) == typeof(Function);
+    }
+}
+Como todo script, ele precisa ser importado em index.html. Como colocá-lo como último script:
+
+<!-- aluraframe/client/index.html -->
+<!-- código anterior omitido -->
+
+    <script src="js/app/models/Negociacao.js"></script>
+    <script src="js/app/models/ListaNegociacoes.js"></script>
+    <script src="js/app/models/Mensagem.js"></script>
+    <script src="js/app/controllers/NegociacaoController.js"></script>
+    <script src="js/app/helpers/DateHelper.js"></script>
+    <script src="js/app/views/View.js"></script>
+    <script src="js/app/views/NegociacoesView.js"></script>
+    <script src="js/app/views/MensagemView.js"></script>
+    <script src="js/app/services/ProxyFactory.js"></script><!-- nova importação -->
+    <script>
+        let negociacaoController = new NegociacaoController();          
+    </script>   
+</body>
+Agora, vamos alterar nosso código para fazer uso da nossa factory. Inclusive, já vamos alterar o modelo this._mensagem para também utilizá-la:
+
+// aluraframe/client/js/app/controllers/NegociacaoController.js
+
+class NegociacaoController {
+
+    constructor() {
+
+        let $ = document.querySelector.bind(document);
+        this._inputData = $('#data');
+        this._inputQuantidade = $('#quantidade');
+        this._inputValor = $('#valor');
+
+        this._listaNegociacoes =  ProxyFactory.create(
+                new ListaNegociacoes(), 
+                    ['adiciona', 'esvazia'],
+                        lista => this._negociacoesView.update(lista.negociacoes));
+
+        this._negociacoesView = new NegociacoesView($('#negociacoesView'));
+        this._negociacoesView.update(this._listaNegociacoes.negociacoes);
+
+        this._mensagem = ProxyFactory.create(
+               new Mensagem(),
+               ['texto'], mensagem => this._mensagemView.update(mensagem)); 
+
+        this._mensagemView = new MensagemView($('#mensagemView'));
+        this._mensagemView.update(this._mensagem);
+    }
+}
+Nosso proxy ainda não está 100%!
+Quando cadastramos uma nova negociação, ela é exibida na tabela, perfeito, mas nossa mensagem não é. O motivo disso é que estamos interceptando apenas métodos. No caso dos métodos, usamos em nosso interceptador a propriedade get, esteja o método recebendo valor ou não. Contudo, quando estamos alterando uma propriedade, como texto da classe Mensagem, o proxy espera executar as armadilhas definidas para a propriedade set. Sendo assim, precisamos alterar nosso ProxyFactory para executar nossa armadilha toda vez que a propriedade indicada for modificada:
+
+// aluraframe/client/js/app/services/ProxyFactory.js
+
+class ProxyFactory{
+
+    static create(objeto, props, acao) {
+
+        return new Proxy(objeto, {
+
+            get(target, prop, receiver) {
+
+                if(props.includes(prop) && ProxyFactory._ehFuncao(target[prop])) {
+
+                    return function() { 
+                        Reflect.apply(target[prop], target, arguments);
+                        return acao(target);
+                    }
+                }
+
+                return Reflect.get(target, prop, receiver);       
+            },
+
+            set(target, prop, value, receiver) {
+                if(props.includes(prop)) {
+                     target[prop] = value;
+                     acao(target);                                           
+                }
+                return Reflect.set(target, prop, value, receiver);
+            }
+
+        });
+    }
+
+    static _ehFuncao(func) {
+        return typeof(func) == typeof(Function);
+    }
+}
+Executando o nosso código mais uma vez, tudo funciona, inclusive a exibição da mensagem. Será que podemos enxugar ainda mais essa associação entre o model e a view? Veja, utilizei a palavra "associação" que no inglês significa "bind". O que fizemos até agora é um bind unidirecional que flui do modelo para a view.
+
+Isolando a complexidade de associar o modelo com a view na classe Bind
+Que tal criarmos uma outra classe com a responsabilidade de criar a associação? Com certeza ela esconderia o ProxyFactory. Sendo assim, ela receberia três parâmetros apenas: o modelo, as propriedades que desejamos monitorar e a view. Será que vai melhorar a legibilidade do nosso código?
+
+Vamos criar a classe aluraframe/client/js/app/helpers/Bind.js:
+
+// aluraframe/client/js/app/helpers/Bind.js
+
+class Bind {
+
+    constructor(model, view, props) {
+
+       let proxy = ProxyFactory.create(model, props, model => {
+           view.update(model)
+       }); 
+
+       view.update(model);
+       return proxy;
+    }
+}
+Vamos importar logo de uma vez o script para não esquecermos:
+
+<!-- aluraframe/client/index.html -->
+<!-- código anterior omitido -->
+
+    <script src="js/app/models/Negociacao.js"></script>
+    <script src="js/app/models/ListaNegociacoes.js"></script>
+    <script src="js/app/models/Mensagem.js"></script>
+    <script src="js/app/controllers/NegociacaoController.js"></script>
+    <script src="js/app/helpers/DateHelper.js"></script>
+    <script src="js/app/views/View.js"></script>
+    <script src="js/app/views/NegociacoesView.js"></script>
+    <script src="js/app/views/MensagemView.js"></script>
+    <script src="js/app/services/ProxyFactory.js"></script>
+    <script src="js/app/helpers/Bind.js"></script>
+    <script>
+        let negociacaoController = new NegociacaoController();          
+    </script>
+Construtor retornando instância de outro tipo!
+Um ponto curioso na linguagem JavaScript é que um construtor pode retornar um objeto de um tipo diferente da classe na qual o construtor foi definido. Veja que criamos o proxy, inclusive já aproveitamos para atualizar a view a primeira vez, algo que era necessário ser feito manualmente. Por fim, o que é retornado pelo construtor de Bind é um proxy totalmente configurado! JavaScript é uma linguagem ninja e quem programa em outras linguagens, como Java ou C#, sabe que retornar um objeto no construtor diferente da classe jamais funcionaria, até porque os construtores dessas linguagem não retornam valor.
+
+Agora, vamos alterar NegociacaoController e realizar nossa associação entre model e view através da nossa classe Bind:
+
+// aluraframe/client/js/app/controllers/NegociacaoController.js
+
+class NegociacaoController {
+
+    constructor() {
+
+        let $ = document.querySelector.bind(document);
+        this._inputData = $('#data');
+        this._inputQuantidade = $('#quantidade');
+        this._inputValor = $('#valor');
+
+        this._listaNegociacoes = new Bind(
+                new ListaNegociacoes(), 
+                new NegociacoesView($('#negociacoesView')), 
+                ['adiciona', 'esvazia']);
+
+        this._mensagem = new Bind(
+            new Mensagem(),
+            new MensagemView($('#mensagemView')),
+            ['texto']);
+    }
+    // código posterior omitido
+}
+Nosso código, claro, continua funcionando e ficou ainda mais legível, porque conseguimos facilmente ver os objetos envolvidos na associação e as propriedades e métodos monitorados.
+
+Parâmetros REST
+Mas que tal ainda darmos uma lapidada? Veja que passamos as propriedades e métodos que desejamos monitorar através de um array. No caso de this._mensagem passamos apenas a propriedade texto. Será que existe alguma forma do último parâmetro passado para Bind ser variável? Ou seja, não queremos passar um array, mas uma quantidade X de parâmetros. Alterando nosso código, queremos algo desse tipo:
+
+// aluraframe/client/js/app/controllers/NegociacaoController.js
+
+class NegociacaoController {
+
+    constructor() {
+
+        let $ = document.querySelector.bind(document);
+        this._inputData = $('#data');
+        this._inputQuantidade = $('#quantidade');
+        this._inputValor = $('#valor');
+
+        this._listaNegociacoes = new Bind(
+                new ListaNegociacoes(), 
+                new NegociacoesView($('#negociacoesView')), 
+                'adiciona', 'esvazia', 'ordena', 'reverte');
+
+        this._mensagem = new Bind(
+            new Mensagem(),
+            new MensagemView($('#mensagemView')),
+            'texto');
+    }
+}
+O problema é que o construtor de Bind recebe três parâmetros apenas, não é variável. Contudo, quando o último parâmetro de um construtor, função ou método é variável, podemos usar o parâmetro REST:
+
+// aluraframe/client/js/app/helpers/Bind.js
+
+class Bind {
+
+    // veja o ... antes do parâmetro props
+    constructor(model, view, ...props) {
+
+       let proxy = ProxyFactory.create(model, props, model => {
+           view.update(model)
+       }); 
+
+       view.update(model);
+       return proxy;
+    }
+}
+Rodando nossa aplicação, vemos que ela funciona perfeitamente. A ideia é a seguinte, quando o último parâmetro é REST, podemos passar quantos parâmetros quisermos para o construtor, função ou método que eles virarão um array! Com isso, enxugamos um pouquinho mais nosso código.
+
+Por fim, podemos remover as propriedades do controller que dizem respeitos às nossas Views, porque elas são usadas apenas pela nossa associação (BIND), isto é, quem vai interagir com nossa view é nosso data binding e não a gente. É por isso que passaremos as instâncias da view direto para no construtor de Bind:
+
+class NegociacaoController {
+
+    constructor() {
+
+        let $ = document.querySelector.bind(document);
+
+        this._inputData = $('#data');
+        this._inputQuantidade = $('#quantidade');
+        this._inputValor = $('#valor');
+
+        this._listaNegociacoes = new Bind(
+            new ListaNegociacoes(), 
+            new NegociacoesView($('#negociacoesView')), 
+            'adiciona', 'esvazia');
+
+        this._mensagem = new Bind(
+            new Mensagem(), new MensagemView($('#mensagemView')),
+            'texto');       
+    }
+
+    adiciona(event) {
+
+        event.preventDefault();
+        this._listaNegociacoes.adiciona(this._criaNegociacao());
+        this._mensagem.texto = 'Negociação adicionada com sucesso'; 
+        this._limpaFormulario();   
+    }
+
+    apaga() {
+
+        this._listaNegociacoes.esvazia();
+        this._mensagem.texto = 'Negociações apagadas com sucesso';
+    }
+
+    _criaNegociacao() {
+
+        return new Negociacao(
+            DateHelper.textoParaData(this._inputData.value),
+            this._inputQuantidade.value,
+            this._inputValor.value);    
+    }
+
+    _limpaFormulario() {
+
+        this._inputData.value = '';
+        this._inputQuantidade.value = 1;
+        this._inputValor.value = 0.0;
+        this._inputData.focus();   
+    }
+}
+
+====================
+
+10 - 
