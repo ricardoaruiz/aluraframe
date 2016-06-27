@@ -3294,4 +3294,390 @@ class NegociacaoController {
 
 ====================
 
-10 - 
+10 - Importando negociações
+
+Além de cadastrarmos negociações, podemos importá-las de serviços especializados na web. Para nossa comodidade, com o projeto que você baixou já existe um servidor configurado para fornecer dados para nossa aplicação, mas nada o impede de aplicar o que aprendeu aqui para consumir dados de outros servidores na web.
+
+Pré-requisito de infraestrutura
+É importante que você tenha atendido o requisito de infraestrutura instalando o Node.js em sua máquina. Até agora você tem acesso à página index.html diretamente em seu navegador, abrindo-a em seu sistema de arquivos. Contudo, agora precisamos acessar a index.html através do nosso servidor, caso contrário nossas requisições Ajax não funcionarão.
+
+Aprendendo a subir nosso servidor
+O primeiro passo é levantar seu servidor. Você precisa de um mínimo de traquejo em seu console/terminal favorito da sua plataforma. Como uso MAC, usarei o terminal do MAC. Se você é usuário de Windows e não domina seu prompt de comando, sugiro que faça o curso Windows: Introdução ao Prompt. Vou assumir desse ponto que você sabe interagir com seu terminal.
+
+Para levantarmos nosso servidor, precisamos abrir nosso terminal e entrar dentro da pasta aluraframe/server. É a primeira vez que interagiremos com essa pasta, mas não se preocupe, você só precisa rodar este comando no seu terminal:
+
+npm start
+Isso fará com que um servidor rode e seja acessível através do endereço http://localhost:3000. Acesse esse endereço e automaticamente a página index.html será carregada. Se preferir, pode digitar http://localhost:3000/index.html.
+
+A única mudança até agora é não acessaremos mais index.html do sistema de arquivos da nossa plataforma, mas por intermédio do nosso servidor. Certifique-se que o servidor esteja funcionando antes de continuar.
+
+Serviços disponíveis
+Nossa aplicação precisa consumir dados de negociações referentes a esta semana, a semana anterior e retrasada. Podem haver serviços na web pagos ou gratuitos que possam retornar negociações de uma ação ou coisa parecida, mas já temos nosso servidor de pé que sabe retornar essas informações para nós. Contudo, como acessá-las?
+
+Geralmente, quem publica serviços na web disponibiliza uma URL de acesso e nosso servidor publica três:
+
+negociacoes/semana
+negociacoes/anterior
+negociacoes/retrasada
+
+Sendo assim, vamos acessar o endereço http://localhost:3000/negociacoes/semana. Veja que saímos da página index.html e o que é exibido na tela é uma estrutura de dados no formato JSON (JavaScript Object Notation):
+
+[{"data":"2016-05-03T16:19:51.892Z","quantidade":1,"valor":150},{"data":"2016-05-03T16:19:51.892Z","quantidade":2,"valor":250},{"data":"2016-05-03T16:19:51.892Z","quantidade":3,"valor":350}]
+
+Lá em nosso servidor, há objetos em memória que são convertidos no formato texto e enviados para o navegador. Se você não tem noção de como servidores são criados e como eles disponibilizam esse tipo de dados, sugiro realizar o curso de MEAN. Nosso foco aqui não é a criação de servidores e serviços, mas como consumimos os dados publicados por eles através de JavaScript.
+
+Pois bem, acessar o endereço diretamente pelo navegador não faz sentido, porque esses dados precisam ser inseridos dentro da nossa lista de negociações. Sendo assim, quem deve buscar esses dados não é o navegador quando nós digitamos o endereço em sua URL, mas o JavaScript que é executado em nosso código. Veja que em nosso layout temos o botão "Importar Negociações", que nada faz. Chegou a hora de implementarmos a busca desses dados.
+
+Requisições Ajax com o objeto XMLHttpRequest
+Vamos adicionar para o evento click do botão uma chamada para negociacaoController.importNegociacoes() que ainda vamos criar. Alterando alurapic/client/index.html:
+
+<!-- aluraframe/client/index.html -->
+
+<!-- código anterior omitido -->
+<div class="text-center">
+    <button onclick="negociacaoController.importaNegociacoes()" class="btn btn-primary text-center" type="button">
+        Importar Negociações
+    </button>
+    <button class="btn btn-primary text-center" type="button">
+        Apagar
+    </button>
+</div> 
+<!-- código posterior omitido -->
+
+Para que possamos realizar requisições Ajax, precisamos de um instância do objeto XMLHttpRequest:
+
+// aluraframe/client/js/app/controllers/NegociacaoController.js
+// código anterior omitido 
+
+importaNegociacoes() {
+    let xhr = new XMLHttpRequest();
+}
+
+Veja que em nenhum momento dizemos para onde nosso objeto xhr deve realizar a requisição e fazemos isso através do método open, que recebe dois parâmetros: o primeiro é o tipo de requisição a ser realizada, o segundo é o endereço propriamente dito:
+
+// aluraframe/client/js/app/controllers/NegociacaoController.js
+// código anterior omitido 
+
+importaNegociacoes() {
+
+    let xhr = new XMLHttpRequest();
+    xhr.open('GET', 'negociacoes/semana');
+}
+
+Como a página que carrega nosso script e os endereços do serviço que consumiremos estão no mesmo servidor, usamos o endereço negociacoes/semana. Não é neste momento que a requisição é feita, precisamos enviá-la através do método send:
+
+// aluraframe/client/js/app/controllers/NegociacaoController.js
+// código anterior omitido 
+
+importaNegociacoes() {
+
+    let xhr = new XMLHttpRequest();
+    xhr.open('GET', 'negociacoes/semana');
+
+    xhr.send(); // muita coisa pode acontecer, temos que nos preparar antes
+}
+
+Entendendo o evento onreadystatechange
+Bem, enviamos nossa requisição, e daí? Muita coisa pode acontecer durante esse processo: o servidor pode estar fora do ar, o endereço acessado pode não existir. Além disso, em nenhum momento em nosso código lidamos com o retorno do servidor. É por isso que antes de enviarmos nossa requisição, precisamos, bem, digamos que "configurá-la":
+
+// aluraframe/client/js/app/controllers/NegociacaoController.js
+// código anterior omitido 
+
+importaNegociacoes() {
+
+    let xhr = new XMLHttpRequest();
+    xhr.open('GET', 'negociacoes/semana');
+    xhr.onreadystatechange = function() {
+
+    }
+
+    xhr.send();
+}
+
+É através do método onreadystatechange que podemos escrutinar a requisição feita, aliás, essa requisição passa por estados, por isso o nome do método em português é pronto para a mudança de estado. Podemos executar um código para cada estado da requisição ajax.
+
+Os estados possíveis são:
+
+0: requisição ainda não iniciada
+1: conexão com o servidor estabelecida
+2: requisição recebida
+3: processando requisição
+4: requisição concluída e a resposta esta pronta
+
+E qual desses estados nos interessa? O estado de número 4, porque é nele que temos acesso à resposta enviada pelo servidor. Mas como temos acesso ao número do estado? Através do próprio objeto XMLHttpRequest. Vamos aproveitar e trocar a função passada para o onreadystatechange para uma arrow function, para o nosso código ficar mais limpo:
+
+// aluraframe/client/js/app/controllers/NegociacaoController.js
+// código anterior omitido 
+
+importaNegociacoes() {
+
+    let xhr = new XMLHttpRequest();
+    xhr.open('GET', 'negociacoes/semana');
+    xhr.onreadystatechange = () => {
+        if(xhr.readyState == 4) {
+
+        }
+    }
+
+    xhr.send();
+}
+Veja que usamos o clássico if para executarmos um código apenas quando a requisição tiver sido concluída e a resposta enviada. Contudo, não podemos simplesmente garantir que a requisição foi bem-sucedida. Como assim?
+
+Lidando com códigos de status
+
+Pode ser que a requisição tenha sido processada até o fim e uma resposta tenha sido recebida, mas o servidor tenha indicado que a operação realizada não foi executada. Para isso, podemos checar o código de status enviado pelo servidor. Normalmente, uma operação padrão bem-sucedida retorna o código de status 200. Existem outros código que podem ser consultados aqui. É o criador do serviço/API que define quais estados são retornados para determinadas operações.
+
+// aluraframe/client/js/app/controllers/NegociacaoController.js
+// código anterior omitido 
+
+importaNegociacoes() {
+
+    let xhr = new XMLHttpRequest();
+    xhr.open('GET', 'negociacoes/semana');
+    xhr.onreadystatechange = () => {
+        if(xhr.readyState == 4) {
+            if(xhr.status == 200) {
+                console.log(xhr.responseText);
+            } else {
+                console.log(xhr.responseText);
+                this._mensagem.texto = 'Não foi possível obter as negociações';
+            }
+        }
+    }
+
+    xhr.send();
+}
+Excelente, o xhr.status é 200, significa que temos acesso à resposta do servidor através da propriedade xhr.responseText. Se imprimirmos no console o retorno, vemos que a lista de negociações é exibida.
+
+Realizando o parse da resposta
+O problema é que, como o nome da propriedade xhr.responseText já diz, a resposta é no formato texto. Sempre é, porque na web o protocolo HTTP é baseado em texto.
+
+Se você já usou bibliotecas, como jQuery e clones, a própria biblioteca se encarrega de converter o texto no formato JSON para objetos JavaScript. Aliás é por isso que muitos desenvolvedores erradamente chamam objetos JavaScript de JSON. Mas a popularidade do termo JSON acabou tornando esse erro algo completamente aceito pelo desenvolvedores.
+
+Para que possamos transforma o JSON (texto) em um array de objetos, usamos a função JSON.parse, que existe desde a versão anterior do JavaScript:
+
+// aluraframe/client/js/app/controllers/NegociacaoController.js
+// código anterior omitido 
+
+importaNegociacoes() {
+
+    let xhr = new XMLHttpRequest();
+    xhr.open('GET', 'negociacoes/semana');
+    xhr.onreadystatechange = () => {
+        if(xhr.readyState == 4) {
+            if(xhr.status == 200) {
+                let dados = JSON.parse(xhr.responseText);
+                console.log(dados);
+                console.log(dados[0]); // podemos exibir itens
+            }
+        }
+    }
+
+    xhr.send();
+}
+
+Criando e adicionando as negociações recebidas
+
+Agora sim! Nossa variável dados agora é um array de objetos JavaScript. Mas cuidado, esses objetos são do tipo Object, ou seja, não são instâncias da nossa classe Negociacao. Lembre-se que adicionamos instâncias de negociações em this._listaNegociacoes.
+
+Vamos varrer a lista de dados e para cada item da lista criaremos uma instância de Negociacao, adicionando-a em nossa lista:
+
+// aluraframe/client/js/app/controllers/NegociacaoController.js
+// código anterior omitido 
+
+importaNegociacoes() {
+
+    let xhr = new XMLHttpRequest();
+    xhr.open('GET', 'negociacoes/semana');
+    xhr.onreadystatechange = () => {
+        if(xhr.readyState == 4) {
+            if(xhr.status == 200) {
+                let dados = JSON.parse(xhr.responseText);
+                dados
+                    .map(dado => new Negociacao(new Date(dado.data), dado.quantidade, dado.valor))
+                    .forEach(negociacao => this._listaNegociacoes.adiciona(negociacao));
+            } 
+        }
+    }
+
+    xhr.send();
+}
+
+Veja que usamos a função .map para criar uma nova lista, onde cada item é uma instância de negociação. Em seguida, iteramos na lista, adicionando cada negociação em nossa lista. Isso não é novidade, já usamos estratégia semelhante em nossos templates.
+
+O que você deve estar estranhando é a maneira com que criamos o campo data para Negociacao. Usamos new Date(dado.data). Isso funciona, porque o construtor de Date aceita receber a data naquele formato e criar uma data corretamente para nós.
+
+Lidando com possíveis erros no servidor
+Antes de testarmos nosso código, precisamos nos blindar caso aconteça algum problema na requisição. É por isso que exibiremos uma mensagem genérica para o usuário caso algum erro ocorra. Fazemos isso para qualquer código de estado diferente de 200:
+
+// aluraframe/client/js/app/controllers/NegociacaoController.js
+// código anterior omitido 
+
+importaNegociacoes() {
+
+    let xhr = new XMLHttpRequest();
+    xhr.open('GET', 'negociacoes/semana');
+    xhr.onreadystatechange = () => { //usando arrow function, this léxico
+        if(xhr.readyState == 4) {
+            if(xhr.status == 200) {
+                let dados = JSON.parse(xhr.responseText);
+                dados
+                    .map(dado => new Negociacao(new Date(dado.data), dado.quantidade, dado.valor))
+                    .forEach(negociacao => this._listaNegociacoes.adiciona(negociacao));
+            } else {
+                console.log(xhr.responseText);
+                this._mensagem.texto = 'Não foi possível obter as negociações';
+            }  
+        }
+    }
+
+    xhr.send();
+}
+
+Veja que logamos a mensagem de erro enviada pelo servidor no console do browser e no lugar de mostrar essa mensagem para o usuário, mostramos uma mensagem mais amigável. Além disso, repare que como usamos arrow functions, podemos acessar this, que ele será uma referência para a instância de NegociacaoController.
+
+Agora é só testar. Com o servidor rodando e abrindo a página index.html através do endereço localhost:3000, vamos clicar no botão Importar negociações. Veja que os dados retornados do servidor são exibidos em nossa tabela. O mais fantástico é que nosso código já se encarrega de atualizar a view sempre que o modelo com as negociações muda.
+
+Podemos fazer um teste para simular um erro, basta colocar um endereço que não existe para a função xhr.open, recarregar a página e clicar no botão de importar. Só não esqueça de voltar com o endereço correto depois.
+
+Separando as responsabilidades
+
+Veja que nosso código está um tanto complexo e nem é responsabilidade do controller buscar nas negociações. E se quisermos usar esse código em outro controller? Para isso, podemos isolar esse código em uma outra classe, que será uma espécie de serviço que pode ser solicitado por qualquer controller do nosso sistema.
+
+Vamos criar a classe aluraframe/client/js/app/servicoes/NegociacaoService.js com o método obterNegociacoesDaSemana. Vamos mover para este método, o código que escrevemos em nosso controller. Não se preocupe, já já o modificaremos:
+
+// aluraframe/client/js/app/services/NegociacaoService.js
+
+class NegociacaoService {
+
+    obterNegociacoesDaSemana() {
+
+        let xhr = new XMLHttpRequest();
+        xhr.open('GET', 'negociacoes/semana');
+        xhr.onreadystatechange = () => {
+            if(xhr.readyState == 4) {
+                if(xhr.status == 200) {
+                    let dados = JSON.parse(xhr.responseText);
+                    dados
+                        .map(dado => new Negociacao(new Date(dado.data), dado.quantidade, dado.valor))
+                        .forEach(negociacao => this._listaNegociacoes.adiciona(negociacao));
+                } else {
+                    console.log(xhr.responseText);
+                    this._mensagem.texto = 'Não foi possível obter as negociações';
+                }  
+            }
+        }
+
+        xhr.send();
+}
+
+Para não corrermos o risco de esquecer, vamos importá-lo em index.html:
+
+<!-- aluraframe/client/index.html -->
+<!-- código anterior omitido -->
+
+    <script src="js/app/models/Negociacao.js"></script>
+    <script src="js/app/models/ListaNegociacoes.js"></script>
+    <script src="js/app/models/Mensagem.js"></script>
+    <script src="js/app/controllers/NegociacaoController.js"></script>
+    <script src="js/app/helpers/DateHelper.js"></script>
+    <script src="js/app/views/View.js"></script>
+    <script src="js/app/views/NegociacoesView.js"></script>
+    <script src="js/app/views/MensagemView.js"></script>
+    <script src="js/app/services/ProxyFactory.js"></script>
+    <script src="js/app/helpers/Bind.js"></script>
+    <script src="js/app/services/NegociacaoService.js"></script>
+    <script>
+        let negociacaoController = new NegociacaoController();          
+    </script>   
+</body>
+</html>
+
+Como estamos criando um serviço que pode ser usado por outros controllers em nossa aplicação, ele não pode estar vinculado a esse ou aquele elemento da view. O primeiro passo é removermos todo o código que amarra nosso serviço ao controller NegociacaoController. Vamos aproveitar e remover a declaração da variável dado, encadeando a chamada da função map diretamente no resultado de JSON.parse:
+
+// aluraframe/client/js/app/services/NegociacaoService.js
+
+class NegociacaoService {
+
+    obterNegociacoesDaSemana() {
+
+        let xhr = new XMLHttpRequest();
+        xhr.open('GET', 'negociacoes/semana');
+        xhr.onreadystatechange = () => {
+            if(xhr.readyState == 4) {
+                if(xhr.status == 200) {
+            //sem let dados
+                    JSON.parse(xhr.responseText)
+                        .map(dado => new Negociacao(new Date(dado.data), dado.quantidade, dado.valor))
+
+                    // removeu o forEach que intera na lista   
+
+                } else {
+                    console.log(xhr.responseText);
+                    // removeu o elemento mensagem
+                }  
+            }
+        }
+
+        xhr.send();
+}
+
+E agora? Vamos fazer com que o nosso método receba uma função como parâmetro. Essa função será chamada só depois da nossa operação assíncrona ter sido concluída, é por isso que chamamos essas funções de callback functions:
+
+// aluraframe/client/js/app/services/NegociacaoService.js
+
+class NegociacaoService {
+
+    obterNegociacoesDaSemana(cb) { //cb de callback
+
+        let xhr = new XMLHttpRequest();
+        xhr.open('GET', 'negociacoes/semana');
+        xhr.onreadystatechange = () => {
+            if(xhr.readyState == 4) {
+                if(xhr.status == 200) {
+
+                    //usando variavel negociacoes        
+                    let negociacoes = 
+                        JSON.parse(xhr.responseText)
+                        .map(dado => new Negociacao(new Date(dado.data), dado.quantidade, dado.valor));
+
+                    cb(null, negociacoes);
+
+                } else {
+                    console.log(xhr.responseText);
+                    cb('Não foi possível obter as negociações da semana', null);
+                }  
+            }
+        }
+
+        xhr.send();
+    }
+}
+
+Veja que se houver um erro, o primeiro parâmetro da função cb receberá o erro e o segundo parâmetro null. Se a requisição for executada corretamente, ela recebe como primeiro parâmetro null e no segundo a lista de negociações totalmente convertida. Pode parecer estranho usar essa forma de retornar um erro ou a lista, mas estamos aplicando um padrão que vem do mundo node.js, que também é chamado de Error-First-Callback.
+
+Agora, basta alterarmos nosso controller. Vamos criar uma instância de NegociacaoService em seu construtor e em seguida usar o serviço para buscar as negociações da semana:
+
+// aluraframe/client/js/app/controllers/NegociacoesController.js
+// código anterior omitido 
+
+//não esqueça de instanciar o service no construtor
+
+importaNegociacoes() {
+
+    this._negociacaoService.obterNegociacoesDaSemana((erro, negociacoes) => {
+
+        if(erro) {
+            this._mensagem.texto = erro;
+            return;
+        }
+        negociacoes.forEach(negociacao => this._listaNegociacoes.adiciona(negociacao)); 
+    });
+
+}
+
+Veja que obterNegociacoesDaSemana recebe como parâmetro uma função que recebe dois parâmetros. Essa função será chamada quando a requisição assíncrona tiver sido concluída com sucesso ou não.
+
+O primeiro parâmetro é o erro retornado pelo serviço, caso ele tenha acontecido. Se não houver erro algum, seu valor será null. No segundo parâmetro teremos acesso a uma lista de negociações, mas não de objetos literais, e sim instâncias de Negociacao. Deixaremos que o serviço faça essa conversão para nós.
+
+Então, quem usa o serviço, só precisa testar se houve algum erro e em nosso caso exibimos esse erro para o usuário e executamos um return para impedir a execução da função. Se não houver erro algum, percorremos a lista de negociações adicionando uma a uma em nossa lista. Muito mais limpo o código, não?

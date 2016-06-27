@@ -18,4 +18,13 @@ class ListaNegociacoes {
         this._negociacoes = [];
     }
 
+    // Podemos utilizar o método "reduce" do array que retorna um único valor a apartir de um array
+    get volumeTotal() {
+        let volumeTotal = 0.0;
+        this._negociacoes.forEach(n => {
+            volumeTotal += n.volume;
+        })
+        return volumeTotal;
+    }
+
 }

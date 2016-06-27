@@ -24,7 +24,7 @@ class NegociacoesView extends View {
             
             <tfoot>
                 <td colspan="3"></td>
-                <td>${this._criaRodape(model.negociacoes)}</td>
+                <td>${model.volumeTotal}</td>
             </tfoot>
         </table>
         `;
@@ -45,16 +45,6 @@ class NegociacoesView extends View {
             `;            
         });
         return linhas;
-    }
-
-    // Método privado que constroi o rodapé da tabela
-    // Podemos utilizar o método "reduce" do array que retorna um único valor a apartir de um array
-    _criaRodape(lista) {
-        let rodape = 0.0;
-        lista.forEach(n => {
-            rodape += n.volume;
-        })
-        return rodape;
     }
 
 }

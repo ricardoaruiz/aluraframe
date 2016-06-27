@@ -1,7 +1,6 @@
 class NegociacaoController {
     
     constructor(){
-
         //A busca dos elementos no DOM sendo executada no construtor da classe torna o mais 
         //performático o código pois os elementos só serão buscados no DOM uma única vez.
 
@@ -37,6 +36,24 @@ class NegociacaoController {
         this._limparFormulario();  
         this._mensagem.texto = 'Negociação adicionada com sucesso.'; 
     }
+
+    importaNegociacoes() {
+        
+        let negociacaoService = new NegociacaoService();
+        negociacaoService.obterNegociacoesDaSemana((erro, negociacoes) => {
+
+            if(erro) {
+                this._mensagem.texto = erro;
+                return;
+            }
+
+            negociacoes.forEach(negociacao => this._listaNegociacoes.adiciona(negociacao));
+            this._mensagem.texto = 'Negociações importadas com sucesso';
+        });
+
+        this._mensagem.texto = 'Negociações apagadas com sucesso.';
+
+    }    
 
     // Apaga todas as negociações
     apaga() {
