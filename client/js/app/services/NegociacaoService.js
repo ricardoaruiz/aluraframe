@@ -3,46 +3,91 @@
  */
 class NegociacaoService {
 
+    constructor() {
+        this._httpService = new HttpService();
+    }
+
     /**
-     * Obtem as negociações da semana.
-     * cb : callback que tratará o resultado da função.
-     *  cb recebe:
-     *      erro - erro ocorrido na solicitação
-     *      negociacoes - lista de negociações retornada pelo serviço remoto.
+     * Retorna uma promise com as negociações da semana atual, passada e retrasada
      */
-    obterNegociacoesDaSemana(cb) {
-        
-        //Cria o objeto para realizar a requisição.
-        let xhr = new XMLHttpRequest();
+    obterNegociacoes() {
+        return new Promise( (resolve, reject) => {
+            // Promisse.all é uma maneira de executar várias promises observando a sequência de execução
+            // Caso alguma delas dê problema nada será retornado caindo no catch para tratar o erro.
+            // Caso não ocorra problema o resultado é a junção do resultado das promisses em um único retorno.
+            Promise.all(
+                [
+                 this.obterNegociacoesDaSemana()
+                ,this.obterNegociacoesDaSemanaAnterior()
+                ,this.obterNegociacoesDaSemanaRetrasada()
+                ]
+            ).then( negociacoes => {
+                // quando todas as promises foram executadas com sucesso a variável "negociacoes" recebida
+                // no then terá um array de arrays de negociacao. A idéia do "reduce"" é transformar esse array de 
+                // array de negociacao em um array com todas as negociações de todos os arrays retornados.
+                console.log(negociacoes);
 
-        //Informa o método HTTP e a URL que será acessada.
-        xhr.open('GET', 'negociacoes/semana');
+                // Reduce recebe uma função e a incialização da variável resultante de seu processamento
+                // A função recebe os seguintes parâmetros:
+                    // arrayAchatado = é o resultado final do processamento do reduce.
+                    // array = é cada array contido no array principal retornado pelas promises.
+                // A inicialização do resultado é:
+                // [] = inicialização do arrayAchatado.
+                resolve(negociacoes.reduce( (arrayAchatado, array) => arrayAchatado.concat(array), [] ));
+                            
+            }).catch( erro => reject(erro)); 
+        });               
+    }
 
-        /*Sempre que a requisição ajax muda esse evento é disparado.
-         Os estados são:
-         0: requisição não iniciada
-         1: conexão com o servidor estabelecida
-         2: requisição recebida
-         3: processando requisição
-         4: requisição concluída e a resposta está pronta
-        */
-        xhr.onreadystatechange = () => {
-            //Caso a requisição esteja concluída e a resposta esteja pronta
-            if (xhr.readyState == 4) {
-                //Verifica se o HTTP status é 200 - OK
-                if(xhr.status == 200) {
-                    cb(null, JSON.parse(xhr.responseText)
-                        .map( objeto => new Negociacao(new Date(objeto.data), objeto.quantidade, objeto.valor)));
-                                        
-                } else {
-                    console.log(xhr.responseText);
-                    cb('Não foi possível obter as negociações do servidor.', null);
-                }
-            }
-        }
+    /**
+     * Retorna uma promise com as negociações da semana.
+     */
+    obterNegociacoesDaSemana() {        
+        return new Promise( (resolve, reject) => {
+            this._httpService
+                .get('negociacoes/semana')
+                .then( negociacoes => {
+                    resolve(negociacoes.map( objeto => new Negociacao(new Date(objeto.data), objeto.quantidade, objeto.valor)));
+                })
+                .catch( erro => {
+                    console.log(erro);
+                    reject('Não foi possível obter as negociações da semana.');
+                });
+        });        
+    }
 
-        xhr.send();
+    /**
+     * Retorna uma promise com as negociações da semana anterior.
+     */
+    obterNegociacoesDaSemanaAnterior() {        
+        return new Promise( (resolve, reject) => {
+            this._httpService
+                .get('negociacoes/anterior')
+                .then( negociacoes => {
+                    resolve(negociacoes.map( objeto => new Negociacao(new Date(objeto.data), objeto.quantidade, objeto.valor)));
+                })
+                .catch( erro => {
+                    console.log(erro);
+                    reject('Não foi possível obter as negociações da semana anterior.');
+                });
+        });
+    }
 
+    /**
+     * Retorna uma promise com as negociações da semana retrasada.
+     */
+    obterNegociacoesDaSemanaRetrasada() {
+       return new Promise( (resolve, reject) => {
+            this._httpService
+                .get('negociacoes/retrasada')
+                .then( negociacoes => {
+                    resolve(negociacoes.map( objeto => new Negociacao(new Date(objeto.data), objeto.quantidade, objeto.valor)));
+                })
+                .catch( erro => {
+                    console.log(erro);
+                    reject('Não foi possível obter as negociações da semana retrasada.');
+                });
+        });       
     }
 
 }

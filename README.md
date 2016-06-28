@@ -173,8 +173,13 @@ Curso JavaScript avançado I: ES6, orientação a objetos e padrões de projetos
 	- Criamos uma classe factory para proxy "ProxyFactory" para esconder a complexidade de criação de um proxy.
 	- Criamos uma classe "Bind" que é responsável por ligar o modelo e a view e realizar atualizações na view quando o modelo for alterado.
 
-10 - Importando negociações
+- 10 - Importando negociações
 
 	- Criamos a classe "NegociacaoService" que será responsável por realizar a chamada aos serviços que retornarão as negociações para serem importadas no sistema.
 
 	- Criamos o método "obterNegociacoesDaSemana" na classe "NegociacaoService" que buscará as negociações da semana. O controller passará a utilizar o service para obter as negociações e disponibilizar as informações na view.
+
+11 -  Combatendo Callback HELL com Promises	
+
+	- Criamos uma classe "HttpService" que é responsável por realizar as chamadas HTTP utilizando o padrão "Promise".
+	- Em "NegociacaoController", usamos "Promise.all" para resolver todas as promises retornas pelos métodos de "NegociacaoService". Com "Promise.all", os resultados virão na ordem em que cada promise foi processada.

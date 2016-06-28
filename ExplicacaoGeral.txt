@@ -3681,3 +3681,469 @@ Veja que obterNegociacoesDaSemana recebe como parâmetro uma função que recebe
 O primeiro parâmetro é o erro retornado pelo serviço, caso ele tenha acontecido. Se não houver erro algum, seu valor será null. No segundo parâmetro teremos acesso a uma lista de negociações, mas não de objetos literais, e sim instâncias de Negociacao. Deixaremos que o serviço faça essa conversão para nós.
 
 Então, quem usa o serviço, só precisa testar se houve algum erro e em nosso caso exibimos esse erro para o usuário e executamos um return para impedir a execução da função. Se não houver erro algum, percorremos a lista de negociações adicionando uma a uma em nossa lista. Muito mais limpo o código, não?
+
+=======================
+
+11 - Combatendo Callback HELL com Promises
+
+O problema da vida assíncrona
+Nossa solução ainda não está completa, porque precisamos consumir não apenas as negociações da semana, mas da semana passada e retrasada, e todas devem ser adicionadas em ordem em nossa lista. Na natureza nada se cria, tudo se copia, vamos editar NegociacaoService e criar mais dois métodos que são idênticos aos anteriores, só muda o endereço:
+
+// aluraframe/client/js/app/services/NegociacaoService.js
+
+class NegociacaoService {
+
+    obterNegociacoesDaSemana(cb) {
+
+        let xhr = new XMLHttpRequest();
+        xhr.open('GET', 'negociacoes/semana');
+        xhr.onreadystatechange = () => {
+            if(xhr.readyState == 4) {
+                if(xhr.status == 200) {
+
+                    let negociacoes = 
+                        JSON.parse(xhr.responseText)
+                        .map(dado => new Negociacao(new Date(dado.data), dado.quantidade, dado.valor));
+
+                    cb(null, negociacoes)
+                } else {
+                    console.log(xhr.responseText);
+                    cb('Não foi possível obter as negociações da semana', null);
+                }  
+            }
+        }
+
+        xhr.send();
+    }
+
+    obterNegociacoesDaSemanaAnterior(cb) {
+
+        let xhr = new XMLHttpRequest();
+        xhr.open('GET', 'negociacoes/anterior');
+        xhr.onreadystatechange = () => {
+            if(xhr.readyState == 4) {
+                if(xhr.status == 200) {
+
+                    let negociacoes = 
+                        JSON.parse(xhr.responseText)
+                        .map(dado => new Negociacao(new Date(dado.data), dado.quantidade, dado.valor));
+
+                    cb(null, negociacoes)
+                } else {
+                    console.log(xhr.responseText);
+                    cb('Não foi possível obter as negociações da semana', null);
+                }  
+            }
+        }
+
+        xhr.send();
+    }
+
+    obterNegociacoesDaSemanaRetrasada(cb) {
+
+        let xhr = new XMLHttpRequest();
+        xhr.open('GET', 'negociacoes/retrasada');
+        xhr.onreadystatechange = () => {
+            if(xhr.readyState == 4) {
+                if(xhr.status == 200) {
+
+                    let negociacoes = 
+                        JSON.parse(xhr.responseText)
+                        .map(dado => new Negociacao(new Date(dado.data), dado.quantidade, dado.valor));
+
+                    cb(null, negociacoes)
+                } else {
+                    console.log(xhr.responseText);
+                    cb('Não foi possível obter as negociações da semana', null);
+                }  
+            }
+        }
+
+        xhr.send();
+    }
+}
+Agora, vamos alterar NegociacaoController e buscar mais dois grupos de negociações:
+
+// aluraframe/client/js/app/controllers/NegociacaoController.js
+// código anterior omitido
+
+importaNegociacoes() {
+
+    this._negociacaoService.obterNegociacoesDaSemana((erro, negociacoes) => {
+
+        if(erro) {
+            this._mensagem.texto = erro;
+            return;
+        }
+        negociacoes.forEach(negociacao => this._listaNegociacoes.adiciona(negociacao)); 
+    });
+
+    this._negociacaoService.obterNegociacoesDaSemanaAnterior((erro, negociacoes) => {
+
+        if(erro) {
+            this._mensagem.texto = erro;
+            return;
+        }
+        negociacoes.forEach(negociacao => this._listaNegociacoes.adiciona(negociacao)); 
+    });
+
+    this._negociacaoService.obterNegociacoesDaSemanaRetrasada((erro, negociacoes) => {
+
+        if(erro) {
+            this._mensagem.texto = erro;
+            return;
+        }
+        negociacoes.forEach(negociacao => this._listaNegociacoes.adiciona(negociacao)); 
+    }); 
+}
+Quando realizamos nosso teste, temos um problema. Apesar de estarmos realizando as requisições na ordem, ou seja, primeiro as negociações da semana, depois as anteriores e por último as retrasadas, nossa listagem não está na ordem esperada. Parece que a requisição das negociações anteriores foi executada depois das retrasadas terem sido buscadas.
+
+Como nossa requisição é assíncrona, ela não espera a operação terminar e já executa a próxima. Sendo assim, temos três requisições executadas em paralelo e a ordem de conclusão interfere no resultado. Internet lenta, acesso ao disco, servidor sobrecarregado e outros fatores podem influenciar no tempo de resposta de uma requisição assíncrona.
+
+Uma solução é executar a próxima requisição apenas quando a anterior for concluída, sendo assim, alterando nosso código temos:
+
+// aluraframe/client/js/app/controllers/NegociacaoController.js
+
+importaNegociacoes() {
+
+    this._negociacaoService.obterNegociacoesDaSemana((erro, negociacoes) => {
+
+        if(erro) {
+            this._mensagem.texto = erro;
+            return;
+        }
+        negociacoes.forEach(negociacao => this._listaNegociacoes.adiciona(negociacao));
+
+        this._negociacaoService.obterNegociacoesDaSemanaAnterior((erro, negociacoes) => {
+
+            if(erro) {
+                this._mensagem.texto = erro;
+                return;
+            }
+            negociacoes.forEach(negociacao => this._listaNegociacoes.adiciona(negociacao)); 
+
+            this._negociacaoService.obterNegociacoesDaSemanaRetrasada((erro, negociacoes) => {
+
+                if(erro) {
+                    this._mensagem.texto = erro;
+                    return;
+                }
+                negociacoes.forEach(negociacao => this._listaNegociacoes.adiciona(negociacao)); 
+            });
+        });
+    });
+}
+Um novo teste mostra que a lista é populada com as negociações da semana e uma pausa acontece. É porque a requisição para as negociações da semana anterior é mais demorada, mas quando ela termina, seus dados são incluídos na lista e por último temos as negociações retrasadas. Perfeito, resolvemos nosso problema.
+
+Callback HELL e a Pyramid of DOOM
+Apesar de funcional, a legibilidade do nosso código deixa a desejar. Quando temos uma função aninhada dentro de outra, dependendo da quantidade de funções, temos o desenho de uma pirâmide deitada, chamada Pyramid of DOOM, em português, pirâmide do destino. Essa pirâmide é sintoma de um problema maior, o Callback HELL.
+
+O padrão de projeto Promise
+Contudo, existe um padrão de projeto que pode nos ajudar a combater o Callback HELL. Esse padrão se chama Promise, ou Promessa em português.
+
+A ideia é o seguinte. O método obterNegociacoesDaSemana, da classe NegociacaoService, retornará um valor quando for chamado e não receberá mais o callback. Como assim? Quer dizer que o valor retornado pelo método será a lista de negociações? Não, seu retorno será uma promessa de que em algum momento essa lista será buscada.
+
+Vamos alterar a classe NegociacoesController e alterar o método importaNegociacoes, ou seja, vamos escrevê-lo novamente do zero:
+
+// aluraframe/client/js/controllers/NegociacoesController.js
+// código anterior omitido
+
+importaNegociacoes() {
+    let promessa = this._negociacaoService.obterNegociacoesDaSemana();
+}
+É claro que precisamos alterar a classe NegociacaoService para que o método obterNegociacoesDaSemana retorne uma promessa, mas deixaremos isso por último. Primeiro vamos entender como lidamos com uma promessa.
+
+Promessas são realizadas pensando no futuro, não é assim no dia a dia? Ou seja, uma promessa pode conter o resultado futuro de uma ação, que pode ser de sucesso ou fracasso.
+
+Ainda nesse contexto, sabemos o que acontecerá quando nossa promessa for cumprida ou não, é por isso que o padrão Promise também permite o nosso código executar um código quando ela for cumprida ou não.
+
+Quando nossa promessa é cumprida, "então" algo acontece. A palavra "então" não está entre aspas por acaso, toda promessa possui a função then, que nos dá acesso ao resultado a operação, ou seja, nos dá acesso ao resultado da promessa quando for cumprida:
+
+importaNegociacoes() {
+
+    let promessa = this._negociacaoService.obterNegociacoesDaSemana();
+    promessa.then(negociacoes => {
+
+        negociacoes.forEach(negociacao => {
+            this._listaNegociacoes.adiciona(negociacao);
+        });
+        this._mensagem.texto = 'Negociações importadas com sucesso'
+    });
+}
+Lidando com erros
+Mas se houver algum problema na requisição? Podemos encadear uma chamada à função catch. Ela recebe uma função que será chamada apenas se houver um erro durante a requisição:
+
+importaNegociacoes() {
+
+    let promessa = this._negociacaoService.obterNegociacoesDaSemana();
+    promessa.then(negociacoes => {
+
+        negociacoes.forEach(negociacao => {
+            this._listaNegociacoes.adiciona(negociacao);
+        });
+        this._mensagem.texto = 'Negociações importadas com sucesso'
+    })
+    .catch(erro => this._mensagem.texto = erro);
+}
+Excelente, mas precisamos aprender a converter o método do nosso serviço em uma promise. O primeiro passo é removermos o parâmetro passado para a função e em seguida retornar uma instância de Promise. Todo o conteúdo do nosso método será o conteúdo da Promise retornada.
+
+class NegociacaoService {
+
+    // veja que não recebe mais o cb  
+    obterNegociacoesDaSemana() {
+        return new Promise((resolve, reject) => {
+
+            let xhr = new XMLHttpRequest();
+            xhr.open('GET', 'negociacoes/semana');
+            xhr.onreadystatechange = () => {
+                if(xhr.readyState == 4) {
+                    if(xhr.status == 200) {
+
+                        let negociacoes = 
+                            JSON.parse(xhr.responseText)
+                            .map(dado => new Negociacao(new Date(dado.data), dado.quantidade, dado.valor));
+
+                        // resultado da operação assíncrona é passado para a função resolve
+                        resolve(negociacoes)
+                    } else {
+                        console.log(xhr.responseText);
+                        // o motivo da rejeição é passado para a função reject
+                        reject('Não foi possível obter as negociações da semana');
+                    }  
+                }
+            }
+            xhr.send();
+
+        });
+
+    }
+    // outros métodos omitidos
+}
+Veja que a Promise retornada recebe uma função com dois parâmetros em seu construtor. O primeiro é sempre uma função que deve receber o valor que é acessado através da função then, quando usamos a Promise. O segundo é sempre a função que recebe a mensagem de erro ou problema que não permitiram que a promessa fosse resolvida. Veja que são nessas funções que passamos a lista de negociações já convertida e a mensagem de erro respectivamente.
+
+Vamos fazer um teste, recarregar nossa página e clicar no botão que importa as negociações. Tudo deve continuar funcionando. É claro que precisamos exibir dados de várias semanas, então, antes de continuarmos, vamos alterar os outros métodos dos nossos serviços para que retornem também uma Promise:
+
+class NegociacaoService {
+
+    obterNegociacoesDaSemana() {
+        return new Promise((resolve, reject) => {
+
+            let xhr = new XMLHttpRequest();
+            xhr.open('GET', 'negociacoes/semana');
+            xhr.onreadystatechange = () => {
+                if(xhr.readyState == 4) {
+                    if(xhr.status == 200) {
+
+                        let negociacoes = 
+                            JSON.parse(xhr.responseText)
+                            .map(dado => new Negociacao(new Date(dado.data), dado.quantidade, dado.valor));
+
+                        resolve(negociacoes)
+                    } else {
+                        console.log(xhr.responseText);
+                        reject('Não foi possível obter as negociações da semana');
+                    }  
+                }
+            }
+            xhr.send();
+
+        });
+
+    }
+
+    obterNegociacoesDaSemanaAnterior() {
+
+        return new Promise((resolve, reject) => {
+
+            let xhr = new XMLHttpRequest();
+            xhr.open('GET', 'negociacoes/anterior');
+            xhr.onreadystatechange = () => {
+                if(xhr.readyState == 4) {
+                    if(xhr.status == 200) {
+
+                        let negociacoes = 
+                            JSON.parse(xhr.responseText)
+                            .map(dado => new Negociacao(new Date(dado.data), dado.quantidade, dado.valor));
+
+                        resolve(negociacoes)
+                    } else {
+                        console.log(xhr.responseText);
+                        reject('Não foi possível obter as negociações da semana');
+                    }  
+                }
+            }
+
+            xhr.send();
+
+        });
+
+    }
+
+    obterNegociacoesDaSemanaRetrasada() {
+
+        return new Promise((resolve, reject) => {
+
+            let xhr = new XMLHttpRequest();
+            xhr.open('GET', 'negociacoes/retrasada');
+            xhr.onreadystatechange = () => {
+                if(xhr.readyState == 4) {
+                    if(xhr.status == 200) {
+
+                        let negociacoes = 
+                            JSON.parse(xhr.responseText)
+                            .map(dado => new Negociacao(new Date(dado.data), dado.quantidade, dado.valor));
+
+                        resolve(negociacoes);
+                    } else {
+                        console.log(xhr.responseText);
+                        reject('Não foi possível obter as negociações da semana');
+                    }  
+                }
+            }
+
+            xhr.send();
+        });
+
+    }
+}
+Um ponto importante é que não enviamos diretamente a mensagem de erro enviada pelo servidor para a função reject. Esta mensagem de erro é logada através de console.log e passamos uma mensagem de alto nível para reject.
+
+Pyramid of DOOM novamente? Claro que não, Promise.all nela!
+Agora, precisamos buscar as negociações das demais semanas. O problema é que se executarmos cada promise uma após a outra, continuaremos sem a garantia de que nosso código será executado em ordem e precisaremos aninhar uma promise dentro de outra, o que pode resultar também no Pyramid of DOOM e por conseguinte no Callback HELL.
+
+Um maneira de executarmos todas as promises em ordem e obtermos o resultado de todas elas de uma vez só é usar a função Promise.all, que recebe um array com todas as promises que ele deve resolver:
+
+importaNegociacoes() {
+
+    Promise.all([
+        this._negociacaoService.obterNegociacoesDaSemana(),
+        this._negociacaoService.obterNegociacoesDaSemanaAnterior(),
+        this._negociacaoService.obterNegociacoesDaSemanaRetrasada()
+    ])
+    .then(negociacoesPorPeriodo => {
+
+        negociacoesPorPeriodo.reduce((grupoAtual, proximoGrupo) => {
+            return grupoAtual.concat(proximoGrupo);
+        })
+        .forEach(negociacao => {
+            this._listaNegociacoes.adiciona(new Negociacao(new Date(negociacao.data), negociacao.quantidade, negociacao.valor))
+        }); 
+    })
+    .catch(erro => this._mensagem.texto = erro);   
+}
+Achatando uma lista de arrays!
+O resultado de Promise.all é um array que possui dentro dele o resultado de cada promise. Como cada promise retorna um array, temos um array com três arrays como conteúdo. Para que possamos iterar e adicionar todas as negociações em nossa lista, precisamos achatar (flaten) o array que contém outros array.
+
+Usamos a função reduce, que já vimos antes para iterar em uma lista e no final nos devolver um único valor. Nesse caso, para cada array que iterarmos em negociacoesPorPeriodo, cada um será concatenado com o próximo, no final, resultando em um array de única dimensão. Depois, varremos o array resultante para adicionar cada negociação em nossa lista.
+
+Outra coisa fantástica é que se houver um erro, seja lá qual promise for, ele será capturado pela função catch. Dessa forma, podemos receber uma mensagem de erro específica, que definimos para cada promise.
+
+Isolando a complexidade em HttpService
+Podemos enxugar ainda mais o código de NegociacaoService, pois olhando com carinho ele possui no mínimo duas responsabilidades:
+
+1) Executar uma requisição HTTP GET e parsear o JSON
+
+2) Criar a lista de negociações baseado no JSON
+
+Como programadores que prezam o mundo OO, vamos criar uma nova classe HttpService, com a responsabilidade de executar a requisição HTTP e devolver o JSON. Assim podemos reaproveitar a classe para outras, futuras requisições!
+
+A nossa nova classe já vai aproveitar o padrão Promise, claro!
+
+Vamos criar aluraframe/client/js/services/HttpService.js:
+
+// aluraframe/client/js/services/HttpService.js
+
+class HttpService {
+
+    get(url) {
+
+        return new Promise((resolve, reject) => {
+
+            let xhr = new XMLHttpRequest();
+            xhr.open('GET', url);
+            xhr.onreadystatechange = () => {
+                if(xhr.readyState == 4) {
+                    if(xhr.status == 200) {
+                        resolve(JSON.parse(xhr.responseText)); //apenas o JSON!
+                    } else {
+                        console.log(xhr.responseText);
+                        reject(xhr.responseText);
+                    }  
+                }
+            }
+
+            xhr.send();
+        });           
+    }
+}
+E claro, vamos importá-la em aluraframe/client/index.html:
+
+<!-- aluraframe/client/index.html -->
+<!-- códig anterior omitido -->
+
+    <script src="js/app/models/Negociacao.js"></script>
+    <script src="js/app/models/ListaNegociacoes.js"></script>
+    <script src="js/app/models/Mensagem.js"></script>
+    <script src="js/app/controllers/NegociacaoController.js"></script>
+    <script src="js/app/helpers/DateHelper.js"></script>
+    <script src="js/app/views/View.js"></script>
+    <script src="js/app/views/NegociacoesView.js"></script>
+    <script src="js/app/views/MensagemView.js"></script>
+    <script src="js/app/services/ProxyFactory.js"></script>
+    <script src="js/app/helpers/Bind.js"></script>
+    <script src="js/app/services/NegociacaoService.js"></script>
+    <script src="js/app/services/HttpService.js"></script>
+    <script>
+        let negociacaoController = new NegociacaoController();          
+    </script>   
+</body>
+</html>
+Agora, vamos alterar NegociacaoService, adicionando a propriedade http em seu construtor, que será uma instância de HttpService. Veja que todo a lógica para realizar a requisição Ajax ficou encapsulada na nova classe que criamos. Nossos métodos de busca só precisam indicar o endereço para http, e ficam com a responsabilidade de criar as negociações:
+
+// aluraframe/client/js/app/services/NegociacaoService.js
+// aluraframe/client/js/app/services/NegociacaoService.js
+
+class NegociacaoService {
+
+    constructor() {
+        this.http = new HttpService();      
+    }
+
+    obterNegociacoesDaSemana() {
+
+        return new Promise((resolve, reject) => {
+
+            this.http.get('negociacoes/semana')
+                .then(dados => resolve(dados.map(dado => new Negociacao(new Date(dado.data), dado.quantidade, dado.valor))))
+                .catch(erro => reject('Não foi possível obter as negociações da semana'));//fim this.http
+
+        });//fim promise
+    }//fim obterNegociacoesDaSemana()
+
+    obterNegociacoesDaSemanaAnterior() {
+
+        return new Promise((resolve, reject) => {
+
+            this.http.get('negociacoes/anterior')
+                .then(dados => resolve(dados.map(dado => new Negociacao(new Date(dado.data), dado.quantidade, dado.valor))))
+                .catch(erro => reject('Não foi possível obter as negociações da semana anterior'));//fim this.http
+
+        });//fim promise
+    }//fim obterNegociacoesDaSemanaAnterior()
+
+    obterNegociacoesDaSemanaRetrasada() {
+
+        return new Promise((resolve, reject) => {
+
+            this.http.get('negociacoes/retrasada')
+                .then(dados => resolve(dados.map(dado => new Negociacao(new Date(dado.data), dado.quantidade, dado.valor))))
+                .catch(erro => reject('Não foi possível obter as negociações da semana retrasada'));//fim this.http
+
+        });//fim promise
+    }//fim obterNegociacoesDaSemanaRetrasada() 
+
+}
+
+=======================
+
+12 - 
