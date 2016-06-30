@@ -4,6 +4,8 @@ Curso JavaScript avançado I: ES6, orientação a objetos e padrões de projetos
 
 - Site com tabela de compatibilidade ECMA: https://kangax.github.io/compat-table/es6/
 
+- Para subir a aplicação, acessar a pasta server e digitar "npm start".
+
 - 1 - Criação do Projeto
 
 - 2 - Especificando uma negociação

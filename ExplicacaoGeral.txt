@@ -4934,7 +4934,3 @@ Esse é um assunto quente para o próximo módulo, não é mesmo?
 8 - Ah se eu pudesse aplicar o que aprendi no Node.js... 
 
 Tudo (arrow functions, proxy, classes...) o que aprendemos de ES6 pode ser aplicado na plataforma Node.js, mas tem um porém: você DEVE usar a versão 6 ou superior do Node.js. Versões anteriores não suportam totalmente os recursos que aprendemos aqui.
-
-=======================
-
-9 - 
