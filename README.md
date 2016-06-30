@@ -179,7 +179,8 @@ Curso JavaScript avançado I: ES6, orientação a objetos e padrões de projetos
 
 	- Criamos o método "obterNegociacoesDaSemana" na classe "NegociacaoService" que buscará as negociações da semana. O controller passará a utilizar o service para obter as negociações e disponibilizar as informações na view.
 
-11 -  Combatendo Callback HELL com Promises	
+- 11 -  Combatendo Callback HELL com Promises	
 
 	- Criamos uma classe "HttpService" que é responsável por realizar as chamadas HTTP utilizando o padrão "Promise".
+
 	- Em "NegociacaoController", usamos "Promise.all" para resolver todas as promises retornas pelos métodos de "NegociacaoService". Com "Promise.all", os resultados virão na ordem em que cada promise foi processada.

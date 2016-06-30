@@ -21,11 +21,12 @@ class DateHelper {
         //Esse código usando função normal seria:
             // map(function(item, indice) { return indice == 1 ? item-1 : item; })
 
-        if( !/\d{4}-\d{2}-\d{2}/.test(texto) ) throw new Error('Deve estar no formato YYYY-MM-DD');
+        if( !/\d{2}\/\d{2}\/\d{4}/.test(texto) ) throw new Error('Deve estar no formato dd/mm/aaaa');
 
         return new Date(...
             texto
-            .split('-')
+            .split('/')
+            .reverse()
             .map((item, indice) => indice == 1 ? item-1 : item)
         );
     }

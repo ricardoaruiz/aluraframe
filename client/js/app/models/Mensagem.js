@@ -1,8 +1,11 @@
 class Mensagem {
 
     // Caso não seja passada o parametro no construtor assume ''.
-    constructor(texto = '') {
-        this._texto = texto;
+    //Não suportado pelo Edge.
+    //constructor(texto = '') {
+
+    constructor(texto) {
+        this._texto = texto || '';
     }
 
     get texto() {

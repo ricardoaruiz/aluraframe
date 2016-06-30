@@ -16,7 +16,7 @@ class NegociacaoController {
         this._listaNegociacoes = new Bind(
             new ListaNegociacoes(),
             new NegociacoesView($('#negociacoesView')),
-            'adiciona','esvazia'
+            'adiciona','esvazia', 'ordena', 'inverteOrdem'
         );
                 
         this._mensagem = new Bind(
@@ -25,6 +25,8 @@ class NegociacaoController {
             'texto'
         );
         
+        // Indica a ordenação atual da tabela.
+        this._ordemAtual = '';
     }
 
     // Adiciona uma negociação a lista de negociações
@@ -32,9 +34,13 @@ class NegociacaoController {
         //Cancela o comportamento padrão de submissão do form
         event.preventDefault();
         
-        this._listaNegociacoes.adiciona(this._criaNegociacao());
-        this._limparFormulario();  
-        this._mensagem.texto = 'Negociação adicionada com sucesso.'; 
+        try{
+            this._listaNegociacoes.adiciona(this._criaNegociacao());
+            this._limparFormulario();  
+            this._mensagem.texto = 'Negociação adicionada com sucesso.'; 
+        } catch( erro ) {
+            this._mensagem.texto = erro;
+        }
     }
 
     importaNegociacoes() {
@@ -54,6 +60,15 @@ class NegociacaoController {
         this._listaNegociacoes.esvazia();
 
         this._mensagem.texto = 'Negociações apagadas com sucesso.';
+    }
+
+    ordena(coluna) {
+        if(this._ordemAtual == coluna){
+            this._listaNegociacoes.inverteOrdem();    
+        } else {
+            this._listaNegociacoes.ordena( (a, b) => a[coluna] - b[coluna] );
+        }
+        this._ordemAtual = coluna;
     }
 
     // Cria uma negociação a partir dos dados da tela

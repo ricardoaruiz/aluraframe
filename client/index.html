@@ -5,6 +5,8 @@
         <title>Negociações</title>
         <link rel="stylesheet" href="css/bootstrap.css">
         <link rel="stylesheet" href="css/bootstrap-theme.css">
+
+        <script src="js/app/polyfill/es6.js"></script>
     </head>
     <body class="container">
         
@@ -16,7 +18,7 @@
             
             <div class="form-group">
                 <label for="data">Data</label>
-                <input type="date" id="data" class="form-control" required autofocus/>        
+                <input type="text" placeholder="dd/mm/aaaa" id="data" class="form-control" required autofocus/>
             </div>    
             
             <div class="form-group">
@@ -74,32 +76,6 @@
         <!-- Seção para instanciar os objetos necessários -->
         <script>
             let negociacaoController = new NegociacaoController();
-
-let dadosServidor = [
-    [
-        new Negociacao(new Date(), 1, 100),
-        new Negociacao(new Date(), 2, 100)
-    ],
-    [
-        new Negociacao(new Date(), 1, 150),
-        new Negociacao(new Date(), 2, 300)
-    ],
-    [
-        new Negociacao(new Date(), 3, 50),
-        new Negociacao(new Date(), 1, 100)
-    ]        
-];
-
-let listaDeNegociacoes = dadosServidor
-    .reduce((novoArray, array) => 
-        novoArray.concat(array), [])
-    .map(dado => 
-        new Negociacao(new Date(dado.data), dado.quantidade, dado.valor ));
-            
-
-console.log(dadosServidor);
-console.log(listaDeNegociacoes);
-
         </script>
     </body>
 </html>

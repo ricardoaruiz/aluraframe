@@ -18,6 +18,14 @@ class ListaNegociacoes {
         this._negociacoes = [];
     }
 
+    ordena(criterio) {
+        this._negociacoes.sort(criterio);
+    }
+
+    inverteOrdem(){
+        this._negociacoes.reverse();
+    }
+
     // Podemos utilizar o método "reduce" do array que retorna um único valor a apartir de um array
     get volumeTotal() {
         let volumeTotal = 0.0;
